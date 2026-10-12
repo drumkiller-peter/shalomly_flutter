@@ -1,6 +1,6 @@
 import 'package:dio/dio.dart';
-import 'package:noah_ark_base_app_flutter/src/core/network/api_endpoints.dart';
-import 'package:noah_ark_base_app_flutter/src/features/announcements/domain/announcement.dart';
+import 'package:shalomly_app/src/core/network/api_endpoints.dart';
+import 'package:shalomly_app/src/features/announcements/domain/announcement.dart';
 
 class AnnouncementsRepository {
   final Dio dio;

@@ -1,6 +1,6 @@
 import 'package:dio/dio.dart';
-import 'package:noah_ark_base_app_flutter/src/core/network/api_endpoints.dart';
-import 'package:noah_ark_base_app_flutter/src/features/prayer/domain/prayer_request.dart';
+import 'package:shalomly_app/src/core/network/api_endpoints.dart';
+import 'package:shalomly_app/src/features/prayer/domain/prayer_request.dart';
 
 class PrayerRepository {
   final Dio dio;

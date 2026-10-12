@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:noah_ark_base_app_flutter/src/core/routing/app_routes.dart';
-import 'package:noah_ark_base_app_flutter/src/core/theme/church_colors.dart';
-import 'package:noah_ark_base_app_flutter/src/features/auth/presentation/bloc/auth_bloc.dart';
-import 'package:noah_ark_base_app_flutter/src/shared/app_text.dart';
+import 'package:shalomly_app/src/core/routing/app_routes.dart';
+import 'package:shalomly_app/src/core/theme/church_colors.dart';
+import 'package:shalomly_app/src/features/auth/presentation/bloc/auth_bloc.dart';
+import 'package:shalomly_app/src/shared/app_text.dart';
 
 /// Reusable user profile button with role badge and leadership portal link.
 class UserAvatarButton extends StatelessWidget {

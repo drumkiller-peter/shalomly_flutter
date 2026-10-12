@@ -1,7 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:noah_ark_base_app_flutter/src/features/events/data/events_repository.dart';
-import 'package:noah_ark_base_app_flutter/src/features/events/domain/event.dart';
+import 'package:shalomly_app/src/features/events/data/events_repository.dart';
+import 'package:shalomly_app/src/features/events/domain/event.dart';
 
 // Events
 abstract class EventsEvent extends Equatable {

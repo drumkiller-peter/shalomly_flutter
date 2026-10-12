@@ -1,4 +1,4 @@
-/// API path constants matching the Noah Ark Solutions backend routes.
+/// API path constants matching the Shalomly backend routes.
 class ApiEndpoints {
   // Authentication & Tenancy
   static const String churchRegister = '/auth/register';

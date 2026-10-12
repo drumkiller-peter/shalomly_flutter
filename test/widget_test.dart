@@ -4,29 +4,29 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:noah_ark_base_app_flutter/src/core/config/app_config.dart';
-import 'package:noah_ark_base_app_flutter/src/core/localization/bilingual_text.dart';
-import 'package:noah_ark_base_app_flutter/src/core/theme/app_theme.dart';
-import 'package:noah_ark_base_app_flutter/src/core/theme/church_colors.dart';
-import 'package:noah_ark_base_app_flutter/src/features/announcements/domain/announcement.dart';
-import 'package:noah_ark_base_app_flutter/src/features/auth/domain/user.dart';
-import 'package:noah_ark_base_app_flutter/src/features/auth/presentation/bloc/auth_bloc.dart';
-import 'package:noah_ark_base_app_flutter/src/features/auth/presentation/screens/login_screen.dart';
-import 'package:noah_ark_base_app_flutter/src/features/auth/presentation/screens/register_screen.dart';
-import 'package:noah_ark_base_app_flutter/src/features/bulletins/domain/bulletin.dart';
-import 'package:noah_ark_base_app_flutter/src/features/devotional/domain/daily_quote.dart';
-import 'package:noah_ark_base_app_flutter/src/features/devotional/presentation/bloc/devotional_bloc.dart';
-import 'package:noah_ark_base_app_flutter/src/features/devotional/presentation/screens/home_screen.dart';
-import 'package:noah_ark_base_app_flutter/src/features/events/domain/event.dart';
-import 'package:noah_ark_base_app_flutter/src/features/giving/domain/fund.dart';
-import 'package:noah_ark_base_app_flutter/src/features/groups/domain/group.dart';
-import 'package:noah_ark_base_app_flutter/src/features/hymns/domain/hymn.dart';
-import 'package:noah_ark_base_app_flutter/src/features/prayer/domain/prayer_request.dart';
-import 'package:noah_ark_base_app_flutter/src/features/prayer/presentation/bloc/prayer_bloc.dart';
-import 'package:noah_ark_base_app_flutter/src/features/prayer/presentation/screens/prayer_screen.dart';
-import 'package:noah_ark_base_app_flutter/src/features/sermons/domain/sermon.dart';
-import 'package:noah_ark_base_app_flutter/src/features/sermons/presentation/bloc/sermons_bloc.dart';
-import 'package:noah_ark_base_app_flutter/src/features/service_times/presentation/bloc/service_times_bloc.dart';
+import 'package:shalomly_app/src/core/config/app_config.dart';
+import 'package:shalomly_app/src/core/localization/bilingual_text.dart';
+import 'package:shalomly_app/src/core/theme/app_theme.dart';
+import 'package:shalomly_app/src/core/theme/church_colors.dart';
+import 'package:shalomly_app/src/features/announcements/domain/announcement.dart';
+import 'package:shalomly_app/src/features/auth/domain/user.dart';
+import 'package:shalomly_app/src/features/auth/presentation/bloc/auth_bloc.dart';
+import 'package:shalomly_app/src/features/auth/presentation/screens/login_screen.dart';
+import 'package:shalomly_app/src/features/auth/presentation/screens/register_screen.dart';
+import 'package:shalomly_app/src/features/bulletins/domain/bulletin.dart';
+import 'package:shalomly_app/src/features/devotional/domain/daily_quote.dart';
+import 'package:shalomly_app/src/features/devotional/presentation/bloc/devotional_bloc.dart';
+import 'package:shalomly_app/src/features/devotional/presentation/screens/home_screen.dart';
+import 'package:shalomly_app/src/features/events/domain/event.dart';
+import 'package:shalomly_app/src/features/giving/domain/fund.dart';
+import 'package:shalomly_app/src/features/groups/domain/group.dart';
+import 'package:shalomly_app/src/features/hymns/domain/hymn.dart';
+import 'package:shalomly_app/src/features/prayer/domain/prayer_request.dart';
+import 'package:shalomly_app/src/features/prayer/presentation/bloc/prayer_bloc.dart';
+import 'package:shalomly_app/src/features/prayer/presentation/screens/prayer_screen.dart';
+import 'package:shalomly_app/src/features/sermons/domain/sermon.dart';
+import 'package:shalomly_app/src/features/sermons/presentation/bloc/sermons_bloc.dart';
+import 'package:shalomly_app/src/features/service_times/presentation/bloc/service_times_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
@@ -41,7 +41,7 @@ void main() {
   group('Core Domain Smoke Tests', () {
     test('AppConfig resolves default tenant key', () {
       final config = AppConfig.resolve();
-      expect(config.tenantKey, equals('noah-ark'));
+      expect(config.tenantKey, equals('sbc'));
       expect(config.churchName, isNotEmpty);
     });
 
@@ -375,7 +375,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // 1. App Bar Header & Greeting
-      expect(find.text('Noah Ark Fellowship'), findsOneWidget);
+      expect(find.text('SBC Church'), findsOneWidget);
       expect(find.text('Welcome to Fellowship'), findsOneWidget);
 
       // 2. Worship spotlight, with no Service Times: no day or time is invented
@@ -532,7 +532,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('Noah Ark Fellowship'), findsOneWidget);
+      expect(find.text('SBC Church'), findsOneWidget);
       expect(
         find.text('Your church community, always within reach'),
         findsOneWidget,
@@ -561,7 +561,7 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        expect(find.text('Noah Ark Fellowship'), findsOneWidget);
+        expect(find.text('SBC Church'), findsOneWidget);
         expect(find.text('Connect with our church family'), findsOneWidget);
         expect(find.text('Join Congregation'), findsOneWidget);
         expect(find.text('Create Account'), findsOneWidget);

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:noah_ark_base_app_flutter/src/core/theme/church_colors.dart';
-import 'package:noah_ark_base_app_flutter/src/shared/app_text.dart';
+import 'package:shalomly_app/src/core/theme/church_colors.dart';
+import 'package:shalomly_app/src/shared/app_text.dart';
 
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   const CustomAppBar({

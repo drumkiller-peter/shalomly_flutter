@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:noah_ark_base_app_flutter/src/core/routing/app_routes.dart';
+import 'package:shalomly_app/src/core/routing/app_routes.dart';
 
 void main() {
   group('AppRoutes', () {

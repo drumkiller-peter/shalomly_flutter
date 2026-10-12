@@ -1,6 +1,6 @@
 import 'package:dio/dio.dart';
-import 'package:noah_ark_base_app_flutter/src/core/network/api_endpoints.dart';
-import 'package:noah_ark_base_app_flutter/src/features/events/domain/event.dart';
+import 'package:shalomly_app/src/core/network/api_endpoints.dart';
+import 'package:shalomly_app/src/features/events/domain/event.dart';
 
 class EventsRepository {
   final Dio dio;

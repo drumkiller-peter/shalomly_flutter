@@ -1,7 +1,7 @@
 import 'package:dio/dio.dart';
-import 'package:noah_ark_base_app_flutter/src/core/di/dependency_injection.dart';
-import 'package:noah_ark_base_app_flutter/src/core/network/api_client.dart';
-import 'package:noah_ark_base_app_flutter/src/core/network/auth_interceptor.dart';
+import 'package:shalomly_app/src/core/di/dependency_injection.dart';
+import 'package:shalomly_app/src/core/network/api_client.dart';
+import 'package:shalomly_app/src/core/network/auth_interceptor.dart';
 
 void initNetwork() {
   getIt

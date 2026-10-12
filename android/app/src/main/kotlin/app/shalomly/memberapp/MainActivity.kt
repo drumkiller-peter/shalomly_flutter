@@ -1,4 +1,4 @@
-package com.example.noah_ark_base_app_flutter
+package app.shalomly.memberapp
 
 import io.flutter.embedding.android.FlutterActivity
 

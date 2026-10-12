@@ -1,9 +1,9 @@
-# Noah Ark — church member app (Flutter)
+# Shalomly — church member app (Flutter)
 
-The member app for the Noah Ark Solutions platform: one Flutter codebase that
+The member app for the Shalomly platform: one Flutter codebase that
 every church ships as its own branded app. Each church gets its own build —
 its own name, store listing, icon, and app key — and every build talks to the
-same shared backend, the FastAPI project in `noah ark solutions app`.
+same shared backend, the FastAPI project in `shalomly-backend`.
 
 A member opens their church's app and sees that church's content, in that
 church's colors, before signing in. Signing in unlocks the personal parts:
@@ -48,7 +48,7 @@ app it is with a `client_id` / `client_secret` and trades them for a guest
 token; without one, nothing loads before sign-in. In the backend project:
 
 ```bash
-./venv/bin/python -m scripts.generate_api_client create --tenant-key noah-ark --name "Noah Ark app (dev)"
+./venv/bin/python -m scripts.generate_api_client create --tenant-key sbc --name "SBC Church app (dev)"
 ```
 
 The secret is printed once — copy both values. A secret inside a mobile app is
@@ -69,7 +69,6 @@ keeps the old values. `--dart-define` no longer changes any setting.
 
 ```bash
 flutter run -d chrome
-flutter run -d macos
 flutter run -d "iPhone 18 Pro"
 ```
 
@@ -82,8 +81,8 @@ obfuscated. A missing key, or a missing `.env`, takes the default below.
 
 | Key | What it is | Default |
 |---|---|---|
-| `TENANT_KEY` | The church's app key; picks which church this build is | `noah-ark` (on the web: the subdomain, e.g. `sbc.example.com` → `sbc`) |
-| `CHURCH_NAME` | Name shown in the app and window title | `Noah Ark Fellowship` |
+| `TENANT_KEY` | The church's app key; picks which church this build is | `sbc` (on the web: the subdomain, e.g. `sbc.shalomly.app` → `sbc`) |
+| `CHURCH_NAME` | Name shown in the app and window title | `SBC Church` |
 | `API_BASE_URL` | Backend address, including `/api/v1` | `http://127.0.0.1:8000/api/v1` |
 | `CLIENT_ID` | The app's API client id | empty — guest content won't load |
 | `CLIENT_SECRET` | The app's API client secret | empty |
@@ -140,12 +139,12 @@ roles themselves.
 
 ## Adding a church
 
-Each church gets its own Member App: its own name, icon, store listing and App Key, built from this one codebase. The full process, the decisions behind it and what to collect from the church are in [`/Users/peter/projects/NOAH_ARK_PLATFORM.md`](/Users/peter/projects/NOAH_ARK_PLATFORM.md), outside both repos. Most steps aren't built yet; each one names its ticket.
+Each church gets its own Member App: its own name, icon, store listing and App Key, built from this one codebase. The full process, the decisions behind it and what to collect from the church are in [`/Users/peter/projects/SHALOMLY_PLATFORM.md`](/Users/peter/projects/SHALOMLY_PLATFORM.md), outside both repos. Most steps aren't built yet; each one names its ticket.
 
 1. **Create the church in the backend.** Not built: backend ticket `churches/01` adds `python -m scripts.provision_church create`. It makes the church, its first Pastor and the app's API client, and prints the client ID and secret once. Keep them in the password manager. Until then, `POST /auth/register` makes the church and its first Pastor, and `scripts.generate_api_client create --tenant-key <app-key>` makes the client.
 2. **Set its colors and logo.** Colors work today: as a Super Admin, `PUT /theme?tenant_id=<id>`. Logo upload is backend ticket `theme/07`.
 3. **Add its folder here.** Not built: ticket `member-apps/01` adds `tool/new_church.sh <app-key>`, which creates `churches/<app-key>/`. Fill in `church.json`, add the logo, and put the client ID and secret in its git-ignored `.env`.
-4. **Build.** Not built: tickets `member-apps/01` and `member-apps/02` add `tool/build_member_app.sh <app-key> <ios|android>`. It applies the bundle ID (`com.noaharksolutions.<app-key>`), name, icon and splash screen, then builds. Build from a clean checkout. Until then, set the church in `.env`, run `dart run build_runner build -d`, then `flutter run`; that runs one church at a time with the shared `com.example` IDs.
+4. **Build.** Not built: tickets `member-apps/01` and `member-apps/02` add `tool/build_member_app.sh <app-key> <ios|android>`. It applies the bundle ID (`app.shalomly.<app-key>`; app ADR 0016), name, icon and splash screen, then builds. Build from a clean checkout. Until then, set the church in `.env`, run `dart run build_runner build -d`, then `flutter run`; that runs one church at a time under the app target's own bundle ID, `app.shalomly.sbc`, and name, "SBC Church".
 5. **Submit to the stores** under the church's own Apple and Google accounts, with its privacy policy URL (backend ticket `stores/01`). Every church ships the same version at the same time.
 
 The web app is one build for every church, chosen by subdomain (`<app-key>.localhost` during development): ticket `web/01`.
@@ -200,7 +199,7 @@ lib/
 
 State is managed with `flutter_bloc`; each feature has a repository that calls
 the backend and a bloc the screens listen to. Internal imports always use the
-`package:noah_ark_base_app_flutter/...` form.
+`package:shalomly_app/...` form.
 
 **Local database** ([`app_database.dart`](lib/src/core/database/app_database.dart),
 schema version 2): `CachedThemes` (the kept Theme), `CachedHymns`,
@@ -280,4 +279,4 @@ Beyond the feature table above:
   live in the backend repo under `.scratch/`.
 - AI agents follow [`AGENTS.md`](AGENTS.md). To let one see the backend too,
   add its folder to the session, e.g.
-  `agy --add-dir "/Users/peter/projects/noah ark solutions app"`.
+  `agy --add-dir /Users/peter/projects/shalomly-backend`.

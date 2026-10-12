@@ -2,8 +2,8 @@ import 'dart:async';
 
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:noah_ark_base_app_flutter/src/features/auth/data/auth_repository.dart';
-import 'package:noah_ark_base_app_flutter/src/features/auth/domain/user.dart';
+import 'package:shalomly_app/src/features/auth/data/auth_repository.dart';
+import 'package:shalomly_app/src/features/auth/domain/user.dart';
 
 part 'auth_event.dart';
 part 'auth_state.dart';

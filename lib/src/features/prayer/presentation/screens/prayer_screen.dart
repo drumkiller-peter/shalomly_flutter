@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
-import 'package:noah_ark_base_app_flutter/src/core/theme/app_theme.dart';
-import 'package:noah_ark_base_app_flutter/src/core/theme/church_colors.dart';
-import 'package:noah_ark_base_app_flutter/src/features/auth/presentation/bloc/auth_bloc.dart';
-import 'package:noah_ark_base_app_flutter/src/features/auth/presentation/widgets/user_avatar_button.dart';
-import 'package:noah_ark_base_app_flutter/src/features/prayer/domain/prayer_request.dart';
-import 'package:noah_ark_base_app_flutter/src/features/prayer/presentation/bloc/prayer_bloc.dart';
+import 'package:shalomly_app/src/core/theme/app_theme.dart';
+import 'package:shalomly_app/src/core/theme/church_colors.dart';
+import 'package:shalomly_app/src/features/auth/presentation/bloc/auth_bloc.dart';
+import 'package:shalomly_app/src/features/auth/presentation/widgets/user_avatar_button.dart';
+import 'package:shalomly_app/src/features/prayer/domain/prayer_request.dart';
+import 'package:shalomly_app/src/features/prayer/presentation/bloc/prayer_bloc.dart';
 
 class PrayerScreen extends StatefulWidget {
   const PrayerScreen({super.key});

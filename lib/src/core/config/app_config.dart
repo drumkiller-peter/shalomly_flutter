@@ -1,12 +1,12 @@
 import 'package:flutter/foundation.dart';
-import 'package:noah_ark_base_app_flutter/src/core/config/env.dart';
+import 'package:shalomly_app/src/core/config/env.dart';
 
 /// Application and Tenant Configuration.
 /// Supports both build-time baked values (from `.env`) and dynamic runtime resolution.
 class AppConfig {
-  static const String _defaultTenantKey = 'noah-ark';
+  static const String _defaultTenantKey = 'sbc';
   static const String _defaultBaseUrl = 'http://127.0.0.1:8000/api/v1';
-  static const String _defaultChurchName = 'Noah Ark Fellowship';
+  static const String _defaultChurchName = 'SBC Church';
 
   final String tenantKey;
   final String apiBaseUrl;

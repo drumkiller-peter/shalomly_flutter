@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
-import 'package:noah_ark_base_app_flutter/src/core/theme/app_theme.dart';
-import 'package:noah_ark_base_app_flutter/src/core/theme/church_colors.dart';
-import 'package:noah_ark_base_app_flutter/src/features/auth/presentation/bloc/auth_bloc.dart';
-import 'package:noah_ark_base_app_flutter/src/features/auth/presentation/widgets/member_session_scope.dart';
-import 'package:noah_ark_base_app_flutter/src/features/events/domain/event.dart';
-import 'package:noah_ark_base_app_flutter/src/features/events/presentation/bloc/events_bloc.dart';
+import 'package:shalomly_app/src/core/theme/app_theme.dart';
+import 'package:shalomly_app/src/core/theme/church_colors.dart';
+import 'package:shalomly_app/src/features/auth/presentation/bloc/auth_bloc.dart';
+import 'package:shalomly_app/src/features/auth/presentation/widgets/member_session_scope.dart';
+import 'package:shalomly_app/src/features/events/domain/event.dart';
+import 'package:shalomly_app/src/features/events/presentation/bloc/events_bloc.dart';
 
 enum EventTimeFilter {
   upcoming('All Upcoming'),
