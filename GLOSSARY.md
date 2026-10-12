@@ -147,5 +147,9 @@ The light- and dark-mode colors and the logo a church's Member App is drawn in, 
 _Avoid_: branding, skin, palette, colors
 
 **Default Theme**:
-The platform's colors, which a church's Member App uses for every color its Theme leaves unchosen. When the platform changes its Default Theme, every church follows it for the colors it never chose.
+The platform's colors, which a church's Member App uses for every color its Theme leaves unchosen and that isn't a Generated Color. When the platform changes its Default Theme, every church follows it for those colors.
 _Avoid_: base theme, fallback colors, Noah Ark theme
+
+**Generated Colors**:
+The colors worked out from a church's chosen primary color for every other color its Theme leaves unchosen, so picking one color is enough for a Theme of its own. The status colors (success, warning, error, info) are never generated. Generated Colors are worked out each time the Theme is read and never stored, so they aren't the church's choices.
+_Avoid_: derived colors, auto colors, palette
