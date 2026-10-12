@@ -3,41 +3,41 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:go_router/go_router.dart';
-import 'package:noah_ark_base_app_flutter/src/core/config/app_config.dart';
-import 'package:noah_ark_base_app_flutter/src/core/database/app_database.dart';
-import 'package:noah_ark_base_app_flutter/src/core/di/dependency_injection.dart';
-import 'package:noah_ark_base_app_flutter/src/core/routing/app_router.dart';
-import 'package:noah_ark_base_app_flutter/src/core/security/token_storage.dart';
-import 'package:noah_ark_base_app_flutter/src/core/theme/app_theme.dart';
-import 'package:noah_ark_base_app_flutter/src/core/theme/church_colors.dart';
-import 'package:noah_ark_base_app_flutter/src/features/announcements/data/announcements_repository.dart';
-import 'package:noah_ark_base_app_flutter/src/features/announcements/presentation/bloc/announcements_bloc.dart';
-import 'package:noah_ark_base_app_flutter/src/features/auth/data/auth_repository.dart';
-import 'package:noah_ark_base_app_flutter/src/features/auth/presentation/bloc/auth_bloc.dart';
-import 'package:noah_ark_base_app_flutter/src/features/auth/presentation/widgets/member_session_scope.dart';
-import 'package:noah_ark_base_app_flutter/src/features/bulletins/data/bulletins_repository.dart';
-import 'package:noah_ark_base_app_flutter/src/features/bulletins/presentation/bloc/bulletins_bloc.dart';
-import 'package:noah_ark_base_app_flutter/src/features/devotional/data/devotional_repository.dart';
-import 'package:noah_ark_base_app_flutter/src/features/devotional/presentation/bloc/devotional_bloc.dart';
-import 'package:noah_ark_base_app_flutter/src/features/events/data/events_repository.dart';
-import 'package:noah_ark_base_app_flutter/src/features/giving/data/giving_repository.dart';
-import 'package:noah_ark_base_app_flutter/src/features/groups/data/groups_repository.dart';
-import 'package:noah_ark_base_app_flutter/src/features/hymns/data/hymns_repository.dart';
-import 'package:noah_ark_base_app_flutter/src/features/hymns/presentation/bloc/hymns_bloc.dart';
-import 'package:noah_ark_base_app_flutter/src/features/prayer/data/prayer_repository.dart';
-import 'package:noah_ark_base_app_flutter/src/features/sermons/data/sermons_repository.dart';
-import 'package:noah_ark_base_app_flutter/src/features/sermons/presentation/bloc/sermons_bloc.dart';
-import 'package:noah_ark_base_app_flutter/src/features/service_times/data/service_times_repository.dart';
-import 'package:noah_ark_base_app_flutter/src/features/service_times/presentation/bloc/service_times_bloc.dart';
+import 'package:shalomly_app/src/core/config/app_config.dart';
+import 'package:shalomly_app/src/core/database/app_database.dart';
+import 'package:shalomly_app/src/core/di/dependency_injection.dart';
+import 'package:shalomly_app/src/core/routing/app_router.dart';
+import 'package:shalomly_app/src/core/security/token_storage.dart';
+import 'package:shalomly_app/src/core/theme/app_theme.dart';
+import 'package:shalomly_app/src/core/theme/church_colors.dart';
+import 'package:shalomly_app/src/features/announcements/data/announcements_repository.dart';
+import 'package:shalomly_app/src/features/announcements/presentation/bloc/announcements_bloc.dart';
+import 'package:shalomly_app/src/features/auth/data/auth_repository.dart';
+import 'package:shalomly_app/src/features/auth/presentation/bloc/auth_bloc.dart';
+import 'package:shalomly_app/src/features/auth/presentation/widgets/member_session_scope.dart';
+import 'package:shalomly_app/src/features/bulletins/data/bulletins_repository.dart';
+import 'package:shalomly_app/src/features/bulletins/presentation/bloc/bulletins_bloc.dart';
+import 'package:shalomly_app/src/features/devotional/data/devotional_repository.dart';
+import 'package:shalomly_app/src/features/devotional/presentation/bloc/devotional_bloc.dart';
+import 'package:shalomly_app/src/features/events/data/events_repository.dart';
+import 'package:shalomly_app/src/features/giving/data/giving_repository.dart';
+import 'package:shalomly_app/src/features/groups/data/groups_repository.dart';
+import 'package:shalomly_app/src/features/hymns/data/hymns_repository.dart';
+import 'package:shalomly_app/src/features/hymns/presentation/bloc/hymns_bloc.dart';
+import 'package:shalomly_app/src/features/prayer/data/prayer_repository.dart';
+import 'package:shalomly_app/src/features/sermons/data/sermons_repository.dart';
+import 'package:shalomly_app/src/features/sermons/presentation/bloc/sermons_bloc.dart';
+import 'package:shalomly_app/src/features/service_times/data/service_times_repository.dart';
+import 'package:shalomly_app/src/features/service_times/presentation/bloc/service_times_bloc.dart';
 
-class NoahArkApp extends StatefulWidget {
+class ShalomlyApp extends StatefulWidget {
   /// The church's colors, chosen once at launch; see `ThemeRepository`.
   final ChurchTheme churchTheme;
   final AppConfig? appConfig;
   final AppDatabase? database;
   final TokenStorage? tokenStorage;
 
-  const NoahArkApp({
+  const ShalomlyApp({
     super.key,
     required this.churchTheme,
     this.appConfig,
@@ -46,10 +46,10 @@ class NoahArkApp extends StatefulWidget {
   });
 
   @override
-  State<NoahArkApp> createState() => _NoahArkAppState();
+  State<ShalomlyApp> createState() => _ShalomlyAppState();
 }
 
-class _NoahArkAppState extends State<NoahArkApp> {
+class _ShalomlyAppState extends State<ShalomlyApp> {
   late final GoRouter _router;
 
   @override

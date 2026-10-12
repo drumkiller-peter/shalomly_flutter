@@ -1,10 +1,10 @@
 import 'dart:convert';
 
 import 'package:dio/dio.dart';
-import 'package:noah_ark_base_app_flutter/src/core/config/app_config.dart';
-import 'package:noah_ark_base_app_flutter/src/core/database/app_database.dart';
-import 'package:noah_ark_base_app_flutter/src/core/network/api_endpoints.dart';
-import 'package:noah_ark_base_app_flutter/src/features/service_times/domain/service_time.dart';
+import 'package:shalomly_app/src/core/config/app_config.dart';
+import 'package:shalomly_app/src/core/database/app_database.dart';
+import 'package:shalomly_app/src/core/network/api_endpoints.dart';
+import 'package:shalomly_app/src/features/service_times/domain/service_time.dart';
 
 /// Loads the church's Service Times and keeps the last copy on the device,
 /// so Home still shows when the church worships while offline.

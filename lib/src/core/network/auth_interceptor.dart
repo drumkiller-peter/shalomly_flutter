@@ -2,9 +2,9 @@ import 'dart:async';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
-import 'package:noah_ark_base_app_flutter/src/core/config/app_config.dart';
-import 'package:noah_ark_base_app_flutter/src/core/network/api_endpoints.dart';
-import 'package:noah_ark_base_app_flutter/src/core/security/token_storage.dart';
+import 'package:shalomly_app/src/core/config/app_config.dart';
+import 'package:shalomly_app/src/core/network/api_endpoints.dart';
+import 'package:shalomly_app/src/core/security/token_storage.dart';
 
 /// QueuedInterceptor handling tenant key injection and atomic token refresh with guest fallback.
 ///

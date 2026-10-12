@@ -1,6 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
-import 'package:noah_ark_base_app_flutter/src/core/config/app_config.dart';
+import 'package:shalomly_app/src/core/config/app_config.dart';
 
 const _timeout = Duration(seconds: 15);
 

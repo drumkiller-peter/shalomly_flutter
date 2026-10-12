@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
-import 'package:noah_ark_base_app_flutter/src/core/theme/app_theme.dart';
-import 'package:noah_ark_base_app_flutter/src/core/theme/church_colors.dart';
-import 'package:noah_ark_base_app_flutter/src/features/announcements/domain/announcement.dart';
-import 'package:noah_ark_base_app_flutter/src/features/announcements/presentation/bloc/announcements_bloc.dart';
+import 'package:shalomly_app/src/core/theme/app_theme.dart';
+import 'package:shalomly_app/src/core/theme/church_colors.dart';
+import 'package:shalomly_app/src/features/announcements/domain/announcement.dart';
+import 'package:shalomly_app/src/features/announcements/presentation/bloc/announcements_bloc.dart';
 
 /// The church's current Announcements, newest first, with urgent ones at the top.
 class AnnouncementsScreen extends StatelessWidget {

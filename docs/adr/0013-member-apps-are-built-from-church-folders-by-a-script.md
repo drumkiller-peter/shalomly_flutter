@@ -1,5 +1,5 @@
 ---
-status: partly superseded by ADR-0015 (the per-church settings file is `.env`, not `dart_defines.json`)
+status: partly superseded by ADR-0015 (the per-church settings file is `.env`, not `dart_defines.json`) and ADR-0016 (the bundle ID is `app.shalomly.<app-key>`)
 ---
 
 # Member Apps are built from church folders by a script, not Flutter flavors
@@ -20,4 +20,4 @@ Each church's Member App is built from the one shared codebase. Everything that 
 ## Consequences
 
 - ADR 0005's "Flutter flavors/schemes" wording is superseded; its baked-versus-dynamic split still stands.
-- The cross-project process is in `/Users/peter/projects/NOAH_ARK_PLATFORM.md`.
+- The cross-project process is in `/Users/peter/projects/SHALOMLY_PLATFORM.md`.

@@ -1,11 +1,11 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:noah_ark_base_app_flutter/src/core/di/dependency_injection.dart';
-import 'package:noah_ark_base_app_flutter/src/features/auth/presentation/bloc/auth_bloc.dart';
-import 'package:noah_ark_base_app_flutter/src/features/events/presentation/bloc/events_bloc.dart';
-import 'package:noah_ark_base_app_flutter/src/features/giving/presentation/bloc/giving_bloc.dart';
-import 'package:noah_ark_base_app_flutter/src/features/groups/presentation/bloc/groups_bloc.dart';
-import 'package:noah_ark_base_app_flutter/src/features/prayer/presentation/bloc/prayer_bloc.dart';
+import 'package:shalomly_app/src/core/di/dependency_injection.dart';
+import 'package:shalomly_app/src/features/auth/presentation/bloc/auth_bloc.dart';
+import 'package:shalomly_app/src/features/events/presentation/bloc/events_bloc.dart';
+import 'package:shalomly_app/src/features/giving/presentation/bloc/giving_bloc.dart';
+import 'package:shalomly_app/src/features/groups/presentation/bloc/groups_bloc.dart';
+import 'package:shalomly_app/src/features/prayer/presentation/bloc/prayer_bloc.dart';
 
 /// Provides the blocs that hold the signed-in member's own data (their
 /// Private Prayer Requests, giving, Groups and RSVPs) and replaces them with

@@ -108,6 +108,6 @@ class AppDatabase extends _$AppDatabase {
   );
 
   static QueryExecutor _openConnection() {
-    return driftDatabase(name: 'noah_ark_db');
+    return driftDatabase(name: 'shalomly_db');
   }
 }

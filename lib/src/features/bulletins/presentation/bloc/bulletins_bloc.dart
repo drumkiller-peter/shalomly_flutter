@@ -1,7 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:noah_ark_base_app_flutter/src/features/bulletins/data/bulletins_repository.dart';
-import 'package:noah_ark_base_app_flutter/src/features/bulletins/domain/bulletin.dart';
+import 'package:shalomly_app/src/features/bulletins/data/bulletins_repository.dart';
+import 'package:shalomly_app/src/features/bulletins/domain/bulletin.dart';
 
 abstract class BulletinsEvent extends Equatable {
   const BulletinsEvent();

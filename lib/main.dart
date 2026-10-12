@@ -1,8 +1,8 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:noah_ark_base_app_flutter/src/app.dart';
-import 'package:noah_ark_base_app_flutter/src/core/di/dependency_injection.dart';
-import 'package:noah_ark_base_app_flutter/src/core/theme/theme_repository.dart';
+import 'package:shalomly_app/src/app.dart';
+import 'package:shalomly_app/src/core/di/dependency_injection.dart';
+import 'package:shalomly_app/src/core/theme/theme_repository.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -21,7 +21,7 @@ void main() async {
       supportedLocales: const [Locale('en', 'US'), Locale('ne', 'NP')],
       path: 'assets/translations',
       fallbackLocale: const Locale('en', 'US'),
-      child: NoahArkApp(
+      child: ShalomlyApp(
         churchTheme: churchTheme,
       ),
     ),

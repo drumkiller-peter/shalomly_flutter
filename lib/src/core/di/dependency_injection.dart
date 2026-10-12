@@ -1,12 +1,12 @@
 import 'package:get_it/get_it.dart';
-import 'package:noah_ark_base_app_flutter/src/core/di/bloc_initialization.dart';
-import 'package:noah_ark_base_app_flutter/src/core/di/core_init.dart';
-import 'package:noah_ark_base_app_flutter/src/core/di/network_initialization.dart';
-import 'package:noah_ark_base_app_flutter/src/core/di/repository_initialization.dart';
-import 'package:noah_ark_base_app_flutter/src/features/events/presentation/bloc/events_bloc.dart';
-import 'package:noah_ark_base_app_flutter/src/features/giving/presentation/bloc/giving_bloc.dart';
-import 'package:noah_ark_base_app_flutter/src/features/groups/presentation/bloc/groups_bloc.dart';
-import 'package:noah_ark_base_app_flutter/src/features/prayer/presentation/bloc/prayer_bloc.dart';
+import 'package:shalomly_app/src/core/di/bloc_initialization.dart';
+import 'package:shalomly_app/src/core/di/core_init.dart';
+import 'package:shalomly_app/src/core/di/network_initialization.dart';
+import 'package:shalomly_app/src/core/di/repository_initialization.dart';
+import 'package:shalomly_app/src/features/events/presentation/bloc/events_bloc.dart';
+import 'package:shalomly_app/src/features/giving/presentation/bloc/giving_bloc.dart';
+import 'package:shalomly_app/src/features/groups/presentation/bloc/groups_bloc.dart';
+import 'package:shalomly_app/src/features/prayer/presentation/bloc/prayer_bloc.dart';
 
 final getIt = GetIt.instance;
 

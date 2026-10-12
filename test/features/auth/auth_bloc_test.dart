@@ -2,10 +2,10 @@ import 'dart:async';
 
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:noah_ark_base_app_flutter/src/core/security/token_storage.dart';
-import 'package:noah_ark_base_app_flutter/src/features/auth/data/auth_repository.dart';
-import 'package:noah_ark_base_app_flutter/src/features/auth/domain/user.dart';
-import 'package:noah_ark_base_app_flutter/src/features/auth/presentation/bloc/auth_bloc.dart';
+import 'package:shalomly_app/src/core/security/token_storage.dart';
+import 'package:shalomly_app/src/features/auth/data/auth_repository.dart';
+import 'package:shalomly_app/src/features/auth/domain/user.dart';
+import 'package:shalomly_app/src/features/auth/presentation/bloc/auth_bloc.dart';
 
 void main() {
   test('an expired session signs the member out', () async {

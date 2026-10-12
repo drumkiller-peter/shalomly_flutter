@@ -1,7 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:noah_ark_base_app_flutter/src/features/groups/data/groups_repository.dart';
-import 'package:noah_ark_base_app_flutter/src/features/groups/domain/group.dart';
+import 'package:shalomly_app/src/features/groups/data/groups_repository.dart';
+import 'package:shalomly_app/src/features/groups/domain/group.dart';
 
 abstract class GroupsEvent extends Equatable {
   const GroupsEvent();

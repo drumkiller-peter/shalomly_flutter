@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
-import 'package:noah_ark_base_app_flutter/src/core/theme/app_theme.dart';
-import 'package:noah_ark_base_app_flutter/src/core/theme/church_colors.dart';
-import 'package:noah_ark_base_app_flutter/src/features/bulletins/domain/bulletin.dart';
-import 'package:noah_ark_base_app_flutter/src/features/bulletins/presentation/bloc/bulletins_bloc.dart';
+import 'package:shalomly_app/src/core/theme/app_theme.dart';
+import 'package:shalomly_app/src/core/theme/church_colors.dart';
+import 'package:shalomly_app/src/features/bulletins/domain/bulletin.dart';
+import 'package:shalomly_app/src/features/bulletins/presentation/bloc/bulletins_bloc.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class BulletinsScreen extends StatelessWidget {

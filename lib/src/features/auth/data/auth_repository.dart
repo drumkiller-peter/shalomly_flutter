@@ -1,7 +1,7 @@
 import 'package:dio/dio.dart';
-import 'package:noah_ark_base_app_flutter/src/core/network/api_endpoints.dart';
-import 'package:noah_ark_base_app_flutter/src/core/security/token_storage.dart';
-import 'package:noah_ark_base_app_flutter/src/features/auth/domain/user.dart';
+import 'package:shalomly_app/src/core/network/api_endpoints.dart';
+import 'package:shalomly_app/src/core/security/token_storage.dart';
+import 'package:shalomly_app/src/features/auth/domain/user.dart';
 
 class AuthRepository {
   final Dio dio;

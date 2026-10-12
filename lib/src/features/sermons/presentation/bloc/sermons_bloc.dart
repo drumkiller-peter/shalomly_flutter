@@ -1,7 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:noah_ark_base_app_flutter/src/features/sermons/data/sermons_repository.dart';
-import 'package:noah_ark_base_app_flutter/src/features/sermons/domain/sermon.dart';
+import 'package:shalomly_app/src/features/sermons/data/sermons_repository.dart';
+import 'package:shalomly_app/src/features/sermons/domain/sermon.dart';
 
 abstract class SermonsEvent extends Equatable {
   const SermonsEvent();

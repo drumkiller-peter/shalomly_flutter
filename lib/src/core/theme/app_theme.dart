@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:noah_ark_base_app_flutter/src/core/theme/church_colors.dart';
+import 'package:shalomly_app/src/core/theme/church_colors.dart';
 
 /// Builds Flutter's [ThemeData] from a church's Theme.
 ///

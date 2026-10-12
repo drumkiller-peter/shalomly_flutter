@@ -1,7 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:noah_ark_base_app_flutter/src/features/service_times/data/service_times_repository.dart';
-import 'package:noah_ark_base_app_flutter/src/features/service_times/domain/service_time.dart';
+import 'package:shalomly_app/src/features/service_times/data/service_times_repository.dart';
+import 'package:shalomly_app/src/features/service_times/domain/service_time.dart';
 
 abstract class ServiceTimesEvent extends Equatable {
   const ServiceTimesEvent();
