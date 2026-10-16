@@ -113,6 +113,19 @@ void main() {
     expect(await storage.getRefreshToken(), 'refresh-2');
   });
 
+  test('the refresh call waits as long as a sleeping server needs, so the '
+      'new tokens are not lost on the way', () async {
+    final backend = backendWith(refreshAnswer: rotated);
+    dio = buildClients(backend);
+
+    await dio.get<Map<String, dynamic>>('/events');
+
+    final refresh = backend.requests.firstWhere(
+      (r) => r.path == ApiEndpoints.refreshToken,
+    );
+    expect(refresh.receiveTimeout, const Duration(seconds: 60));
+  });
+
   test('a burst of 401s spends the refresh token only once', () async {
     final backend = backendWith(
       refreshAnswer: () async {

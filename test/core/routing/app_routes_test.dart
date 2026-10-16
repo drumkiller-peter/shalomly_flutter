@@ -13,7 +13,8 @@ void main() {
     });
 
     test('defines correct path constants for standalone screens', () {
-      expect(AppRoutes.bulletins, '/bulletins');
+      expect(AppRoutes.eventDetail(7), '/events/7');
+      expect(AppRoutes.eventDetailPattern, '/events/:id');
       expect(AppRoutes.sermons, '/sermons');
       expect(AppRoutes.groups, '/groups');
       expect(AppRoutes.groupDetailsPattern, '/groups/:id');

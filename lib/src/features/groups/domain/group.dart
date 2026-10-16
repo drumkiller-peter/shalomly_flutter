@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:shalomly_app/src/features/events/domain/event_summary.dart';
 
 enum GroupType {
   bibleStudy('bible_study', 'Bible Study'),
@@ -150,7 +151,14 @@ class GroupPost extends Equatable {
   final int groupId;
   final int authorId;
   final String? authorName;
-  final String body;
+
+  /// The message; a post may be only an Event, so it can be absent.
+  final String? body;
+
+  /// The Event this post shares with the Group, and its current details.
+  /// [event] is null when there is no Event or it was deleted since.
+  final int? eventId;
+  final EventSummary? event;
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -159,7 +167,9 @@ class GroupPost extends Equatable {
     required this.groupId,
     required this.authorId,
     this.authorName,
-    required this.body,
+    this.body,
+    this.eventId,
+    this.event,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -170,7 +180,11 @@ class GroupPost extends Equatable {
       groupId: json['group_id'] as int,
       authorId: json['author_id'] as int,
       authorName: json['author_name'] as String?,
-      body: json['body'] as String,
+      body: json['body'] as String?,
+      eventId: json['event_id'] as int?,
+      event: json['event'] == null
+          ? null
+          : EventSummary.fromJson(json['event'] as Map<String, dynamic>),
       createdAt: DateTime.parse(json['created_at'] as String),
       updatedAt: json['updated_at'] != null
           ? DateTime.parse(json['updated_at'] as String)
@@ -179,5 +193,6 @@ class GroupPost extends Equatable {
   }
 
   @override
-  List<Object?> get props => [id, groupId, authorId, authorName, body, createdAt, updatedAt];
+  List<Object?> get props =>
+      [id, groupId, authorId, authorName, body, eventId, event, createdAt, updatedAt];
 }

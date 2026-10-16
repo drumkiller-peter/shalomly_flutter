@@ -56,15 +56,8 @@ class ApiEndpoints {
   static String groupPosts(int id) => '/groups/$id/posts';
   static String groupPost(int id, int postId) => '/groups/$id/posts/$postId';
 
-  // Communication & Bulletins
-  static const String bulletins = '/bulletins';
-  static const String announcements = '/announcements';
-
   // Sermons
   static const String sermons = '/sermons';
-
-  // The church's regular weekly worship, readable with a guest token
-  static const String serviceTimes = '/service-times';
 
   // The church's colors, readable with a guest token
   static const String theme = '/theme';

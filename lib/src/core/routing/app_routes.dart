@@ -5,12 +5,12 @@ abstract final class AppRoutes {
   static const String home = devotional;
   static const String hymns = '/hymns';
   static const String events = '/events';
+  static const String eventDetailPattern = '/events/:id';
+  static String eventDetail(Object id) => '/events/$id';
   static const String prayer = '/prayer';
   static const String giving = '/giving';
 
   // Content & Features
-  static const String bulletins = '/bulletins';
-  static const String announcements = '/announcements';
   static const String sermons = '/sermons';
   static const String groups = '/groups';
   static const String groupDetailsPattern = '/groups/:id';

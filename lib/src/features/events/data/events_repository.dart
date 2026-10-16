@@ -1,6 +1,8 @@
 import 'package:dio/dio.dart';
 import 'package:shalomly_app/src/core/network/api_endpoints.dart';
 import 'package:shalomly_app/src/features/events/domain/event.dart';
+import 'package:shalomly_app/src/features/events/domain/event_draft.dart';
+import 'package:shalomly_app/src/features/events/domain/event_type.dart';
 
 class EventsRepository {
   final Dio dio;
@@ -10,20 +12,23 @@ class EventsRepository {
   Future<List<ChurchEvent>> getEvents({
     DateTime? startsAfter,
     DateTime? startsBefore,
-    int? groupId,
     bool includeCancelled = false,
+    List<EventType>? types,
+    int pageSize = 50,
+    bool newestFirst = false,
   }) async {
     final response = await dio.get<dynamic>(
       ApiEndpoints.events,
       queryParameters: {
         'page': 1,
-        'page_size': 50,
+        'page_size': pageSize,
+        if (types != null) 'type': [for (final type in types) type.value],
         if (startsAfter != null)
           'starts_after': startsAfter.toUtc().toIso8601String(),
         if (startsBefore != null)
           'starts_before': startsBefore.toUtc().toIso8601String(),
-        'group_id': ?groupId,
         'include_cancelled': includeCancelled,
+        if (newestFirst) 'newest_first': true,
       },
     );
 
@@ -42,6 +47,39 @@ class EventsRepository {
         .toList();
   }
 
+  Future<ChurchEvent> getEvent(int id) async {
+    final response = await dio.get<dynamic>(ApiEndpoints.eventDetails(id));
+    return ChurchEvent.fromJson(response.data as Map<String, dynamic>);
+  }
+
+  /// Saves the edit form; every field is sent, so a cleared one is cleared.
+  Future<void> updateEvent(int id, EventDraft draft) async {
+    await dio.patch<dynamic>(
+      ApiEndpoints.eventDetails(id),
+      data: draft.toUpdateJson(),
+    );
+  }
+
+  /// Calls an Event off, or puts it back on the calendar.
+  Future<void> setCancelled(int id, bool cancelled) async {
+    await dio.patch<dynamic>(
+      ApiEndpoints.eventDetails(id),
+      data: {'is_cancelled': cancelled},
+    );
+  }
+
+  /// Shares an Event with a Group: a Group Post that points to it.
+  Future<void> shareWithGroup({required int eventId, required int groupId}) async {
+    await dio.post<dynamic>(
+      ApiEndpoints.groupPosts(groupId),
+      data: {'event_id': eventId},
+    );
+  }
+
+  Future<void> deleteEvent(int id) async {
+    await dio.delete<dynamic>(ApiEndpoints.eventDetails(id));
+  }
+
   Future<void> setRsvp({
     required int eventId,
     required String status,
@@ -57,26 +95,11 @@ class EventsRepository {
     await dio.delete<dynamic>(ApiEndpoints.eventRsvp(eventId));
   }
 
-  Future<ChurchEvent> createEvent({
-    required String title,
-    String? description,
-    required DateTime startsAt,
-    required DateTime endsAt,
-    String? locationName,
-    String? address,
-    int? groupId,
-  }) async {
+  /// Posts one Event; the draft must have no [EventDraft.problems].
+  Future<ChurchEvent> createEvent(EventDraft draft) async {
     final response = await dio.post<dynamic>(
       ApiEndpoints.events,
-      data: {
-        'title': title,
-        'description': ?description,
-        'starts_at': startsAt.toUtc().toIso8601String(),
-        'ends_at': endsAt.toUtc().toIso8601String(),
-        'location_name': ?locationName,
-        'address': ?address,
-        'group_id': ?groupId,
-      },
+      data: draft.toCreateJson(),
     );
     return ChurchEvent.fromJson(response.data as Map<String, dynamic>);
   }

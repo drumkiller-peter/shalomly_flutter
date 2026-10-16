@@ -22,17 +22,15 @@ screen shows something you never created, that's why.
 
 | Feature | Backend calls | State |
 |---|---|---|
-| Sign in, register, stay signed in | `/auth/login`, `/auth/member/register`, `/auth/me`, `/auth/refresh`, `/auth/logout` | **Works**; an expired access token is refreshed quietly (see [Tokens](#how-a-churchs-app-works)); sanctuary brand hero header, curved bottom surface card, Newsreader greeting, and responsive member registration |
+| Sign in, register, stay signed in | `/auth/login`, `/auth/member/register`, `/auth/me`, `/auth/refresh`, `/auth/logout` | **Works**; an expired access token is refreshed quietly, waiting up to 60 seconds for a sleeping server; the launch check waits up to 45 seconds and tries three times, and keeps the stored tokens if the server stays silent (see [Tokens](#how-a-churchs-app-works)); sanctuary brand hero header, curved bottom surface card, Newsreader greeting, and responsive member registration |
 | Theme (church colors) | `GET /theme` | **Works** — see [Theme](#theme) |
-| Home (sanctuary feed) | `GET /daily-quotes`, `GET /sermons`, `GET /service-times` | **Works**; features warm Newsreader/Inter typography pairing, a worship spotlight showing the church's next Service Time (kept on the device for offline; no day or time when the church has none) with Order of Service and no Watch Live until there is a livestream, slim action pills (`/bulletins`, `/announcements`, `/sermons`, `/groups`, `/admin`), interactive 7-day Weekday Date Strip, 3-Card Devotional layout (Today's Scripture with Philippians 4:6-7 fallback, Pastoral Reflection, Prayer for Today), Fellowship Highlights (`/prayer`, `/events`), and Featured Sermon spotlight with YouTube playback |
+| Home (sanctuary feed) | `GET /daily-quotes`, `GET /sermons`, `GET /events?type=worship`, `GET /events?type=notice` | **Works**; warm Newsreader/Inter typography pairing, a worship card showing the next `worship` Event (a service in progress still shows; Order of Service opens that Event when it has text or a PDF; with no worship Event it says "Worship With Us" and leads to the calendar), up to three Notices from this week, shortcuts to Sermons and Small Groups (and the Church Workspace for church leaders only) that wrap instead of scrolling sideways, 3-Card Devotional layout (Today's Scripture with Philippians 4:6-7 fallback, Pastoral Reflection, Prayer for Today), Fellowship Highlights (`/prayer`, `/events`), and Featured Sermon spotlight with YouTube playback |
 | Sermons | `GET /sermons` | **Works**; sanctuary media archive with search, preacher filter chips, 16:9 video preview cards, and bottom sheet sermon notes |
-| Events and RSVP | `GET /events`, `POST /events`, `PUT`/`DELETE /events/{id}/rsvp` | **Works**; sanctuary event cards with serif date tiles; filter chips send `starts_after`/`starts_before` and `group_id`; no sample events (clean empty and error states); RSVP failures alert the member and revert; Content Managers and Youth Leaders can post church events |
+| Events and RSVP | `GET /events` (with `type`, `starts_after`, `starts_before`), `GET`/`PATCH`/`DELETE /events/{id}`, `POST /events`, `PUT`/`DELETE /events/{id}/rsvp`, `POST /groups/{id}/posts` | **Works**; every Event has a type (worship, fellowship, conference, Bible study, prayer meeting, outreach, celebration, notice, other), is church-wide, and shows on a calendar at the top of the Events tab (a week that opens up to the whole month, with a dot on each day that has an Event; tapping a day lists that day's Events) and in a list under it, grouped by date and showing its type; filters All Upcoming / This Week / Past Events are cut at the start of today; opens an Event detail screen (`/events/:id`) with text, a PDF link, an image, RSVP, and Edit / Cancel / Delete for Pastors, Admins and the Youth Leader who posted it; the form needs a title, type, start date and start time, and can repeat weekly for a month (four separate Events) and share the Event with Groups; PDF and image are pasted links until uploads exist; no sample events |
 | Giving | `GET /funds`, `GET`/`POST /donations` | **Works**; sanctuary hero and fund cards with serif balances; backend payment methods (`manual_cash`, `manual_cheque`, `bank_transfer`); manual gift entry restricted to finance roles (`isFinanceManager`); failed gifts never show a fake receipt and preserve form inputs |
 | Prayer | `GET`/`POST /prayers/chain`, `GET`/`POST /prayers/private`, `POST`/`DELETE /prayers/{id}/intercessions`, `GET /prayers/private/{id}/pastoral-prayers` | **Works**; real prayer routes for Prayer Chain and Private Prayer Requests; handles unassigned pastors; optimistic intercession toggle with failure rollback; sanctuary cards with member avatar, prayer body, and "Intercede" / "Interceding" state |
 | Hymns | `GET /hymns` | **No backend route yet**; sanctuary bilingual songbook with serif typography, dual-column and single-language lyric viewer, search, and bookmarking |
-| Bulletins | `GET /bulletins?is_published=true` | **Works**; every published Bulletin, latest date first, with several per week told apart by title; rich text, a PDF link, or both; offline shows the kept copy, never a sample |
-| Announcements (`/announcements`) | `GET /announcements` | **No backend route yet** (backend ticket `announcements/01`); its own screen, urgent ones first and marked, with empty and error states and no sample announcements |
-| Groups | `GET /groups`, `GET /groups/{id}`, `POST /groups`, `POST /groups/{id}/join`, `POST /groups/{id}/leave`, `GET`/`POST`/`DELETE /groups/{id}/members`, `POST`/`DELETE /groups/{id}/leaders/{user_id}`, `GET`/`POST`/`PATCH`/`DELETE /groups/{id}/posts` | **Works**; real backend routes with no sample data; signed-out visitors see sign-in prompt; open/closed group status; join/leave call `POST`; dedicated Group view (`/groups/:id`) with Group Posts, member management, leader appointments, and Group Event scheduling |
+| Groups | `GET /groups`, `GET /groups/{id}`, `POST /groups`, `POST /groups/{id}/join`, `POST /groups/{id}/leave`, `GET`/`POST`/`DELETE /groups/{id}/members`, `POST`/`DELETE /groups/{id}/leaders/{user_id}`, `GET`/`POST`/`PATCH`/`DELETE /groups/{id}/posts` | **Works**; real backend routes with no sample data; signed-out visitors see sign-in prompt; open/closed group status; join/leave call `POST`; dedicated Group view (`/groups/:id`) with Group Posts (a post can show an Event, with its current details), member management, and leader appointments |
 | Church Workspace (`/admin`, `/workspace`) | — | **Mockup**: hardcoded numbers and rows; "Reconcile" only shows a message |
 | Watch glance (`/watch/glance`) | — | A black two-page route showing the first quote and event; there is no watchOS or Wear OS target |
 
@@ -119,8 +117,11 @@ the client credentials for a new guest token. Then it replays the request once.
 A burst of `401`s spends the refresh token once; requests that failed with the
 old token retry with the new one. Only the backend rejecting the refresh token
 signs the member out (and `AuthBloc` follows); being offline or a server error
-keeps the session. A `401` from sign-in, registration or the token routes
-themselves is never retried. Tokens live in the platform keychain/keystore
+keeps the session. The refresh call waits up to 60 seconds, because the backend
+revokes the old token the moment it answers and a free host can take that long
+to wake; the launch check (`/auth/me`) waits up to 45 seconds and tries three
+times, and never clears the tokens (ADR 0010). A `401` from sign-in,
+registration or the token routes themselves is never retried. Tokens live in the platform keychain/keystore
 (`flutter_secure_storage`).
 
 **Whose data** ([`member_session_scope.dart`](lib/src/features/auth/presentation/widgets/member_session_scope.dart)):
@@ -131,7 +132,7 @@ member's Private Prayer Requests or giving.
 
 **Navigation** ([`app_router.dart`](lib/src/core/routing/app_router.dart)):
 five tabs (Home, Hymns, Events, Prayer, Giving) — a bottom bar on phones, a
-side rail from 720px wide — plus full-screen routes for bulletins, sermons,
+side rail from 720px wide — plus full-screen routes for an Event (`/events/:id`), sermons,
 groups, sign-in, and the Workspace. There is no route guard; screens check
 roles themselves.
 
@@ -198,13 +199,17 @@ lib/
 ```
 
 State is managed with `flutter_bloc`; each feature has a repository that calls
-the backend and a bloc the screens listen to. Internal imports always use the
+the backend and a bloc the screens listen to. A bloc is three files (`x_bloc.dart`,
+`x_event.dart`, `x_state.dart`) with one `Equatable` state and an enum for its
+status; see [`AGENTS.md`](AGENTS.md). `event_detail_bloc`, `calendar_events_bloc`
+and `home_events_bloc` follow it; older blocs are moved as they are changed. Internal imports always use the
 `package:shalomly_app/...` form.
 
 **Local database** ([`app_database.dart`](lib/src/core/database/app_database.dart),
 schema version 2): `CachedThemes` (the kept Theme), `CachedHymns`,
-`CachedDailyQuotes`, `CachedBulletins`, and `CachedEvents`, which nothing uses
-yet. After changing a table, regenerate the code:
+`CachedDailyQuotes`, `CachedEvents`, `CachedBulletins`, and `CachedServiceTimes`,
+which nothing uses any more (Bulletins and Service Times are Events now; the
+two tables go in the next schema version). After changing a table, regenerate the code:
 
 ```bash
 dart run build_runner build -d
@@ -216,7 +221,9 @@ dart run build_runner build -d
 
 ```bash
 flutter analyze    # must stay clean
-flutter test       # unit tests for models and config, in test/widget_test.dart
+flutter test       # everything under test/: models, blocs and filters for Events, the
+                   # sign-in check and token refresh, routes, and the widget tests in
+                   # test/widget_test.dart (the Home and auth screens)
 ```
 
 ---
@@ -263,7 +270,11 @@ Beyond the feature table above:
 - No route guards: the Workspace is reachable by URL, and only the screen
   checks the role.
 - Launching offline shows a signed-in member as a guest: the app keeps their
-  tokens but has no cached profile to show until `/auth/me` answers.
+  tokens but has no cached profile to show until `/auth/me` answers. At launch
+  it now waits up to 45 seconds and tries three times before giving up (a
+  sleeping free-tier server takes up to a minute to wake), and it never clears
+  the tokens for a server that doesn't answer; only a `401` from the refresh
+  call ends the session.
 
 ---
 

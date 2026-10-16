@@ -1,12 +1,13 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:intl/intl.dart';
+import 'package:shalomly_app/src/core/constants/translation_string.dart';
 import 'package:shalomly_app/src/core/theme/app_theme.dart';
 import 'package:shalomly_app/src/core/theme/church_colors.dart';
 import 'package:shalomly_app/src/features/auth/presentation/bloc/auth_bloc.dart';
-import 'package:shalomly_app/src/features/events/data/events_repository.dart';
 import 'package:shalomly_app/src/features/groups/data/groups_repository.dart';
 import 'package:shalomly_app/src/features/groups/domain/group.dart';
+import 'package:shalomly_app/src/features/groups/presentation/widgets/shared_event_card.dart';
 
 class GroupDetailScreen extends StatefulWidget {
   final Group group;
@@ -89,12 +90,6 @@ class _GroupDetailScreenState extends State<GroupDetailScreen>
               style: AppTheme.serif(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             actions: [
-              if (canLead && !_currentGroup.isArchived)
-                IconButton(
-                  icon: const Icon(Icons.event_available_rounded),
-                  tooltip: 'Add Group Event',
-                  onPressed: () => _showAddGroupEventSheet(context),
-                ),
               IconButton(
                 icon: const Icon(Icons.refresh_rounded),
                 onPressed: _loadGroupData,
@@ -249,14 +244,28 @@ class _GroupDetailScreenState extends State<GroupDetailScreen>
                     ],
                   ),
                   const SizedBox(height: 8),
-                  Text(
-                    post.body,
-                    style: TextStyle(
-                      fontSize: 14,
-                      height: 1.45,
-                      color: context.churchColors.text,
+                  if (post.body != null && post.body!.isNotEmpty)
+                    Text(
+                      post.body!,
+                      style: TextStyle(
+                        fontSize: 14,
+                        height: 1.45,
+                        color: context.churchColors.text,
+                      ),
                     ),
-                  ),
+                  if (post.event != null) ...[
+                    if (post.body != null && post.body!.isNotEmpty)
+                      const SizedBox(height: 10),
+                    SharedEventCard(event: post.event!),
+                  ] else if (post.eventId != null &&
+                      (post.body == null || post.body!.isEmpty))
+                    Text(
+                      TranslationString.eventNoLongerOnCalendar.tr(),
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: context.churchColors.textMuted,
+                      ),
+                    ),
                 ],
               ),
             );
@@ -647,111 +656,5 @@ class _GroupDetailScreenState extends State<GroupDetailScreen>
         );
       }
     }
-  }
-
-  void _showAddGroupEventSheet(BuildContext context) {
-    final titleController = TextEditingController();
-    final descController = TextEditingController();
-    final locationController = TextEditingController();
-    final now = DateTime.now();
-    final startDate = DateTime(now.year, now.month, now.day + 2, 18, 0);
-    final endDate = DateTime(now.year, now.month, now.day + 2, 19, 30);
-
-    showModalBottomSheet<void>(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: context.churchColors.surface,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (ctx) => StatefulBuilder(
-        builder: (sheetContext, setModalState) {
-          return Padding(
-            padding: EdgeInsets.only(
-              left: 20,
-              right: 20,
-              top: 16,
-              bottom: MediaQuery.of(sheetContext).viewInsets.bottom + 20,
-            ),
-            child: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Text(
-                    'Add Event for ${_currentGroup.name}',
-                    style: AppTheme.serif(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: context.churchColors.text,
-                    ),
-                  ),
-                  const SizedBox(height: 14),
-                  TextField(
-                    controller: titleController,
-                    decoration: const InputDecoration(labelText: 'Event Title'),
-                  ),
-                  const SizedBox(height: 10),
-                  TextField(
-                    controller: descController,
-                    maxLines: 2,
-                    decoration: const InputDecoration(labelText: 'Description (Optional)'),
-                  ),
-                  const SizedBox(height: 10),
-                  TextField(
-                    controller: locationController,
-                    decoration: const InputDecoration(labelText: 'Location Name'),
-                  ),
-                  const SizedBox(height: 16),
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: context.churchColors.primary,
-                      foregroundColor: context.churchColors.onPrimary,
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                    ),
-                    onPressed: () async {
-                      final title = titleController.text.trim();
-                      if (title.isNotEmpty) {
-                        Navigator.pop(ctx);
-                        try {
-                          await context.read<EventsRepository>().createEvent(
-                                title: title,
-                                description: descController.text.trim().isNotEmpty
-                                    ? descController.text.trim()
-                                    : null,
-                                startsAt: startDate,
-                                endsAt: endDate,
-                                locationName: locationController.text.trim().isNotEmpty
-                                    ? locationController.text.trim()
-                                    : null,
-                                groupId: _currentGroup.id,
-                              );
-                          if (context.mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('Group Event added to church calendar'),
-                              ),
-                            );
-                          }
-                        } catch (e) {
-                          if (context.mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text('Failed to add Group Event: $e'),
-                              ),
-                            );
-                          }
-                        }
-                      }
-                    },
-                    child: const Text('Add Event to Calendar'),
-                  ),
-                ],
-              ),
-            ),
-          );
-        },
-      ),
-    );
   }
 }

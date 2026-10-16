@@ -2,11 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shalomly_app/src/core/routing/app_routes.dart';
 import 'package:shalomly_app/src/core/routing/main_shell.dart';
-import 'package:shalomly_app/src/features/announcements/presentation/screens/announcements_screen.dart';
 import 'package:shalomly_app/src/features/auth/presentation/screens/login_screen.dart';
 import 'package:shalomly_app/src/features/auth/presentation/screens/register_screen.dart';
-import 'package:shalomly_app/src/features/bulletins/presentation/screens/bulletins_screen.dart';
 import 'package:shalomly_app/src/features/devotional/presentation/screens/home_screen.dart';
+import 'package:shalomly_app/src/features/events/presentation/screens/event_detail_screen.dart';
 import 'package:shalomly_app/src/features/events/presentation/screens/events_screen.dart';
 import 'package:shalomly_app/src/features/giving/presentation/screens/giving_screen.dart';
 import 'package:shalomly_app/src/features/groups/domain/group.dart';
@@ -77,13 +76,11 @@ GoRouter createAppRouter() {
       ),
       GoRoute(
         parentNavigatorKey: _rootNavigatorKey,
-        path: AppRoutes.bulletins,
-        builder: (context, state) => const BulletinsScreen(),
-      ),
-      GoRoute(
-        parentNavigatorKey: _rootNavigatorKey,
-        path: AppRoutes.announcements,
-        builder: (context, state) => const AnnouncementsScreen(),
+        path: AppRoutes.eventDetailPattern,
+        builder: (context, state) {
+          final id = int.tryParse(state.pathParameters['id'] ?? '') ?? 0;
+          return EventDetailScreen(eventId: id);
+        },
       ),
       GoRoute(
         parentNavigatorKey: _rootNavigatorKey,

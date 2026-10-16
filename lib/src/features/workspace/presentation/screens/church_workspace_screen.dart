@@ -418,7 +418,7 @@ class ChurchWorkspaceScreen extends StatelessWidget {
                   style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 12),
-                _buildToolTile(context, Icons.newspaper, 'Weekly Bulletins', 'Publish service orders & alerts', AppRoutes.bulletins),
+                _buildToolTile(context, Icons.calendar_month, 'Events', 'Post and manage the church calendar', AppRoutes.events),
                 _buildToolTile(context, Icons.video_library, 'Sermons & Media', 'Manage YouTube catalog', AppRoutes.sermons),
                 _buildToolTile(context, Icons.group_work, 'Groups', 'Oversee group rosters', AppRoutes.groups),
                 _buildToolTile(context, Icons.menu_book, 'Bilingual Hymn Book', 'Catalogue lyrics & audio', AppRoutes.hymns),

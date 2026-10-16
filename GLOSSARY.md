@@ -31,7 +31,7 @@ An Elder who also manages the church's finances (funds, donations, payouts), and
 _Avoid_: finance manager, accountant
 
 **Youth Leader**:
-A church role that may post church-wide Events and Announcements, managing only those it created, and may create Groups, becoming their first Group Leader.
+A church role that may post Events, managing only those it created, and may create Groups, becoming their first Group Leader.
 _Avoid_: youth committee, youth pastor
 
 **Elder**:
@@ -49,36 +49,30 @@ A set of Members within one church who meet or serve together, such as a Bible s
 _Avoid_: section, committee, ministry
 
 **Group Leader**:
-A Member who leads one Group, managing its membership, Group Posts, and Events, with no rights beyond that Group. Whoever creates a Group becomes its first Group Leader; after that, rights over the Group come only from leading it. A Group may have several, appointed by its Group Leaders or the church's Pastors and Admins, or none, in which case its Pastors and Admins manage it until they appoint one. A Member stops being a Group Leader the moment they leave the Group or stop being an active Member.
+A Member who leads one Group, managing its membership and Group Posts, with no rights beyond that Group. Whoever creates a Group becomes its first Group Leader; after that, rights over the Group come only from leading it. A Group may have several, appointed by its Group Leaders or the church's Pastors and Admins, or none, in which case its Pastors and Admins manage it until they appoint one. A Member stops being a Group Leader the moment they leave the Group or stop being an active Member.
 _Avoid_: co-leader, group owner, group admin
 
 **Archived Group**:
-A Group that has ended: hidden from browsing and joining, its Events off the calendar, and its history kept for the church's Pastors and Admins. A Group is archived, never deleted, and a Pastor or Admin may unarchive it, restoring its members, Group Posts, and future Events.
+A Group that has ended: hidden from browsing and joining, and its history kept for the church's Pastors and Admins. A Group is archived, never deleted, and a Pastor or Admin may unarchive it, restoring its members and Group Posts.
 _Avoid_: deleted group, disbanded group, inactive group
 
 **Group Post**:
-A message posted inside one Group by one of its Group Leaders or by a Pastor or Admin, visible only to that Group's members and the church's Pastors and Admins. Other Members of the Group read but do not post. Its author may edit or delete it; the Group's other Group Leaders and the church's Pastors and Admins may delete it. Deletion is permanent. Content meant for a subset of the church is a Group Post, never an Announcement.
+A message posted inside one Group by one of its Group Leaders or by a Pastor or Admin, visible only to that Group's members and the church's Pastors and Admins. Other Members of the Group read but do not post. Its author may edit or delete it; the Group's other Group Leaders and the church's Pastors and Admins may delete it. Deletion is permanent. A Group Post may point to an Event, showing the Event's current details; that is how an Event is shared with a Group. Content meant for a subset of the church is a Group Post, never an Event.
 _Avoid_: group message, group announcement
-
-### Publishing
-
-**Announcement**:
-A time-bound notice to the whole church, such as a schedule change or an urgent request. Always church-wide; anything for a subset of the church is a Group Post instead.
-_Avoid_: notice, section announcement
-
-**Bulletin**:
-A document a church publishes for all its Members to read, such as the week's order of service or a conference program, as rich text, a PDF, or both. A church may publish several in a week, and past ones stay to look back through. A short notice that should go away after a date is an Announcement instead.
-_Avoid_: newsletter, weekly, Saturday fellowship
 
 ### Calendar
 
 **Event**:
-A dated gathering on a church's calendar, either church-wide or belonging to one Group. A church-wide Event is posted by a Pastor, Admin, or Youth Leader; a Group's Event is posted by its Group Leaders or a Pastor or Admin, and only that Group's Members and the church's Pastors and Admins see it.
-_Avoid_: section event, youth event
+Anything a church puts on its calendar for the whole church, on a set date and start time: a gathering, such as a worship service, a fellowship, or a conference, or a Notice. Every Event has exactly one Event Type. It may carry text, a PDF (such as a worship service's order of service or a conference program), and an image. It is posted by a Pastor, Admin, or Youth Leader. Each Event is its own record, even when the same gathering happens every week, because the details, such as who leads it, change from week to week.
+_Avoid_: bulletin, announcement, service time, group event, section event
 
-**Service Time**:
-A regular weekly gathering for worship, such as "Nepali Worship, Saturday 10:00 AM, Main Hall", shown in the church's app to anyone. A church may have several. It repeats every week and is not an Event; a one-off change to it is an Announcement.
-_Avoid_: service schedule, worship time, Sunday service
+**Event Type**:
+The one kind an Event is, from a fixed list shared by every church: worship, fellowship, conference, Bible study, prayer meeting, outreach, celebration, notice, or other. It says what kind of thing the Event is, never who it is for.
+_Avoid_: category, tag, youth event
+
+**Notice**:
+An Event that is not a gathering but something the church should know about on a date, such as "Church office closed Monday".
+_Avoid_: announcement, alert
 
 ### Sermons
 

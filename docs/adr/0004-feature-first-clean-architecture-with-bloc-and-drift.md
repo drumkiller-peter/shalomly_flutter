@@ -11,4 +11,5 @@ The Flutter application is structured by feature (`lib/src/features/<feature>/do
 
 - Each feature owns its data contracts (DTOs, datasources), domain entities and repository interfaces, and presentation layers (BLoCs, screens, widgets).
 - Shared cross-cutting concerns (authentication session, networking client, theme, local database) live under `lib/src/core/`.
-- Drift provides type-safe offline caching with SQLite, enabling offline access to hymns, daily quotes, and bulletins across all supported platforms.
+- Drift provides type-safe offline caching with SQLite, enabling offline access to hymns and daily quotes across all supported platforms. (Bulletins were cached too until they became Events, which are not cached yet.)
+- A bloc is three files (`x_bloc.dart` with `part` / `part of` files for its events and its state), and its state is one `Equatable` class with an enum status, never class-type states; see `AGENTS.md`. Older blocs predate this and are moved when they are changed substantially.

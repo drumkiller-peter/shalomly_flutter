@@ -14,11 +14,14 @@ import 'package:shalomly_app/src/core/utils/extensions/date_time_extension.dart'
 import 'package:shalomly_app/src/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:shalomly_app/src/features/auth/presentation/widgets/user_avatar_button.dart';
 import 'package:shalomly_app/src/features/devotional/domain/daily_quote.dart';
+import 'package:shalomly_app/src/features/auth/presentation/widgets/member_session_scope.dart';
+import 'package:shalomly_app/src/features/devotional/domain/home_worship.dart';
 import 'package:shalomly_app/src/features/devotional/presentation/bloc/devotional_bloc.dart';
+import 'package:shalomly_app/src/features/devotional/presentation/bloc/home_events_bloc.dart';
+import 'package:shalomly_app/src/features/events/data/events_repository.dart';
+import 'package:shalomly_app/src/features/events/domain/event.dart';
 import 'package:shalomly_app/src/features/sermons/domain/sermon.dart';
 import 'package:shalomly_app/src/features/sermons/presentation/bloc/sermons_bloc.dart';
-import 'package:shalomly_app/src/features/service_times/domain/service_time.dart';
-import 'package:shalomly_app/src/features/service_times/presentation/bloc/service_times_bloc.dart';
 import 'package:shalomly_app/src/shared/app_icon.dart';
 import 'package:shalomly_app/src/shared/app_rounded_card.dart';
 import 'package:shalomly_app/src/shared/app_text.dart';
@@ -33,18 +36,36 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  late DateTime _selectedDate;
+  late final HomeEventsBloc _homeEvents;
+  int? _sessionGeneration;
 
   @override
   void initState() {
     super.initState();
-    _selectedDate = DateTime.now();
+    _homeEvents = HomeEventsBloc(repository: context.read<EventsRepository>());
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // On first build, and again whenever someone else signs in or out.
+    final generation = MemberSessionScope.maybeGenerationOf(context);
+    if (generation != _sessionGeneration) {
+      _sessionGeneration = generation;
+      _homeEvents.add(HomeEventsLoadRequested(DateTime.now()));
+    }
+  }
+
+  @override
+  void dispose() {
+    _homeEvents.close();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     final appConfig = context.watch<AppConfig>();
-    final todayFormatted = _selectedDate.toDoWMDFormat();
+    final todayFormatted = DateTime.now().toDoWMDFormat();
     return Scaffold(
       appBar: CustomAppBar(
         titleSpacing: 16,
@@ -110,34 +131,39 @@ class _HomeScreenState extends State<HomeScreen> {
           context.read<DevotionalBloc>().add(
             DevotionalFetchRequested(forceRefresh: true),
           );
+          _homeEvents.add(HomeEventsLoadRequested(DateTime.now()));
+          await _homeEvents.stream.firstWhere(
+            (state) => state.status == HomeEventsStatus.loaded,
+            orElse: () => _homeEvents.state,
+          );
         },
-        child: ListView(
+        child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
-          children: [
-            // 1. Warm Greeting & Worship Status
-            _buildSanctuaryHero(context),
-            const SizedBox(height: 18),
 
-            // 2. Slim Action Pills (Replacing 8-box grid)
-            _buildQuickActionPills(context),
-            const SizedBox(height: 18),
+          child: CustomScrollView(
+            slivers: [
+              // 1. Warm Greeting & Worship Status
+              SliverToBoxAdapter(child: _buildSanctuaryHero(context)),
+              SliverToBoxAdapter(child: _buildNotices(context)),
+              const SliverGap(18),
 
-            // 3. Weekday Calendar Strip
-            _buildWeekdayStrip(context),
-            const SizedBox(height: 18),
+              // 2. Slim Action Pills (Replacing 8-box grid)
+              SliverToBoxAdapter(child: _buildQuickActionPills(context)),
+              const SliverGap(18),
 
-            // 4. Daily Scripture / Verse of the Day Sanctuary Card
-            _buildDevotionalSection(context),
-            const SizedBox(height: 22),
+              // 4. Daily Scripture / Verse of the Day Sanctuary Card
+              SliverToBoxAdapter(child: _buildDevotionalSection(context)),
+              const SliverGap(22),
 
-            // 5. Fellowship Highlights Pulse
-            _buildFellowshipPulse(context),
-            const SizedBox(height: 20),
+              // 5. Fellowship Highlights Pulse
+              SliverToBoxAdapter(child: _buildFellowshipPulse(context)),
+              const SliverGap(20),
 
-            // 6. Featured Sermon Media Spotlight
-            _buildFeaturedSermonSpotlight(context),
-            const SizedBox(height: 32),
-          ],
+              // 6. Featured Sermon Media Spotlight
+              SliverToBoxAdapter(child: _buildFeaturedSermonSpotlight(context)),
+              const SliverGap(32),
+            ],
+          ),
         ),
       ),
     );
@@ -232,20 +258,20 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  /// The church's next Service Time, with Order of Service. A church with
-  /// none shows the card without a day or time rather than an invented one.
+  /// The church's next worship Event, with its Order of Service when it has
+  /// one. With no upcoming worship Event the card has no day or time, rather
+  /// than an invented one, and leads to the calendar.
   Widget _buildWorshipSpotlight(BuildContext context) {
-    return BlocBuilder<ServiceTimesBloc, ServiceTimesState>(
+    return BlocBuilder<HomeEventsBloc, HomeEventsState>(
+      bloc: _homeEvents,
       builder: (context, state) {
-        final next = ServiceTime.next(state.serviceTimes, DateTime.now());
-        final others = state.serviceTimes.where((s) => s != next);
-        final details = [
-          if (next?.location != null) next!.location!,
-          ...others.map((s) => '${s.name} · ${s.dayName} ${s.formattedTime}'),
-        ].join('\n');
-        final subtitle = details.isEmpty
-            ? 'Worship, communion, and preaching of the Word'
-            : details;
+        final next = state.nextWorship;
+        final place = next?.locationName ?? next?.address;
+        final subtitle = (place != null && place.isNotEmpty)
+            ? place
+            : 'Worship, communion, and preaching of the Word';
+        final startsThisWeek = next != null &&
+            next.startsAt.difference(DateTime.now()) < const Duration(days: 7);
         return Container(
           decoration: BoxDecoration(
             gradient: AppTheme.heroGradient(context.churchColors),
@@ -283,9 +309,9 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: Text(
                       next == null
                           ? 'WEEKLY WORSHIP'
-                          : '${next.dayName.toUpperCase()} • ${next.formattedTime}',
+                          : '${DateFormat('EEEE').format(next.startsAt).toUpperCase()} • ${DateFormat('h:mm a').format(next.startsAt)}',
                       style: TextStyle(
-                        fontSize: 11,
+                        fontSize: 12,
                         fontWeight: FontWeight.w800,
                         letterSpacing: 0.8,
                         color: context.churchColors.onPrimary.withValues(
@@ -296,31 +322,33 @@ class _HomeScreenState extends State<HomeScreen> {
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
-                  const SizedBox(width: 8),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 3,
-                    ),
-                    decoration: BoxDecoration(
-                      color: context.churchColors.onPrimary,
-                      borderRadius: BorderRadius.circular(999),
-                    ),
-                    child: Text(
-                      TranslationString.thisWeek.tr(),
-                      style: TextStyle(
-                        fontSize: 9.5,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: 0.5,
-                        color: context.churchColors.primary,
+                  if (startsThisWeek) ...[
+                    const SizedBox(width: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 3,
+                      ),
+                      decoration: BoxDecoration(
+                        color: context.churchColors.onPrimary,
+                        borderRadius: BorderRadius.circular(999),
+                      ),
+                      child: Text(
+                        TranslationString.thisWeek.tr(),
+                        style: TextStyle(
+                          fontSize: 9.5,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 0.5,
+                          color: context.churchColors.primary,
+                        ),
                       ),
                     ),
-                  ),
+                  ],
                 ],
               ),
               const SizedBox(height: 16),
               Text(
-                next?.name ?? 'Worship With Us',
+                next?.title ?? 'Worship With Us',
                 style: AppTheme.serif(
                   fontSize: 25,
                   fontWeight: FontWeight.w700,
@@ -333,11 +361,9 @@ class _HomeScreenState extends State<HomeScreen> {
               Text(
                 subtitle,
                 style: TextStyle(
-                  fontSize: 12.5,
+                  fontSize: 14,
                   height: 1.45,
-                  color: context.churchColors.onPrimary.withValues(
-                    alpha: 0.82,
-                  ),
+                  color: context.churchColors.onPrimary.withValues(alpha: 0.82),
                 ),
               ),
               const SizedBox(height: 18),
@@ -348,23 +374,31 @@ class _HomeScreenState extends State<HomeScreen> {
                       style: FilledButton.styleFrom(
                         backgroundColor: context.churchColors.onPrimary,
                         foregroundColor: context.churchColors.primary,
-                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        minimumSize: const Size.fromHeight(48),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),
-                      icon: const Icon(
-                        Icons.auto_stories_rounded,
-                        size: 16,
+                      icon: Icon(
+                        next == null
+                            ? Icons.calendar_month_rounded
+                            : Icons.auto_stories_rounded,
+                        size: 18,
                       ),
-                      label: const Text(
-                        'Order of Service',
-                        style: TextStyle(
-                          fontSize: 12.5,
+                      label: Text(
+                        next == null
+                            ? TranslationString.homeViewEvents.tr()
+                            : next.hasOrderOfService
+                            ? TranslationString.orderOfService.tr()
+                            : TranslationString.homeViewEvent.tr(),
+                        style: const TextStyle(
+                          fontSize: 14,
                           fontWeight: FontWeight.w700,
                         ),
                       ),
-                      onPressed: () => context.push(AppRoutes.bulletins),
+                      onPressed: () => next == null
+                          ? context.go(AppRoutes.events)
+                          : context.push(AppRoutes.eventDetail(next.id)),
                     ),
                   ),
                 ],
@@ -376,125 +410,77 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildWeekdayStrip(BuildContext context) {
-    final now = DateTime.now();
-    // Week starts on Sunday
-    final sunday = DateTime(
-      now.year,
-      now.month,
-      now.day,
-    ).subtract(Duration(days: now.weekday % 7));
-    final weekDays = List.generate(7, (i) => sunday.add(Duration(days: i)));
-
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 6),
-      decoration: BoxDecoration(
-        color: context.churchColors.surface,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: context.churchColors.border.withValues(alpha: 0.7),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: context.churchColors.text.withValues(alpha: 0.03),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
+  /// Up to three Notices from this week, under the worship card; nothing
+  /// at all when there are none.
+  Widget _buildNotices(BuildContext context) {
+    return BlocBuilder<HomeEventsBloc, HomeEventsState>(
+      bloc: _homeEvents,
+      builder: (context, state) {
+        if (state.notices.isEmpty) return const SizedBox.shrink();
+        final colors = context.churchColors;
+        return Padding(
+          padding: const EdgeInsets.only(top: 18),
+          child: Container(
+            padding: const EdgeInsets.fromLTRB(16, 14, 16, 6),
+            decoration: AppTheme.sanctuaryCard(colors),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Icon(Icons.campaign_rounded, size: 20, color: colors.warning),
+                    const SizedBox(width: 8),
+                    Text(
+                      TranslationString.homeNoticesHeading.tr(),
+                      style: AppTheme.serif(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
+                        color: colors.text,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                for (final notice in state.notices) _buildNoticeRow(context, notice),
+              ],
+            ),
           ),
-        ],
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: weekDays.map((date) {
-          final isSelected =
-              _selectedDate.year == date.year &&
-              _selectedDate.month == date.month &&
-              _selectedDate.day == date.day;
-          final isToday =
-              now.year == date.year &&
-              now.month == date.month &&
-              now.day == date.day;
+        );
+      },
+    );
+  }
 
-          return Expanded(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 2),
-              child: Material(
-                color: isSelected
-                    ? context.churchColors.primary
-                    : Colors.transparent,
-                borderRadius: BorderRadius.circular(14),
-                child: InkWell(
-                  borderRadius: BorderRadius.circular(14),
-                  onTap: () {
-                    HapticFeedback.selectionClick();
-                    setState(() {
-                      _selectedDate = date;
-                    });
-                  },
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(vertical: 8),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(14),
-                      border: !isSelected && isToday
-                          ? Border.all(
-                              color: context.churchColors.primary.withValues(
-                                alpha: 0.5,
-                              ),
-                              width: 1.2,
-                            )
-                          : null,
-                    ),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          DateFormat('E').format(date).toUpperCase(),
-                          style: AppTheme.sans(
-                            fontSize: 10,
-                            fontWeight: isSelected
-                                ? FontWeight.w800
-                                : FontWeight.w600,
-                            letterSpacing: 0.6,
-                            color: isSelected
-                                ? context.churchColors.onPrimary.withValues(
-                                    alpha: 0.88,
-                                  )
-                                : context.churchColors.textMuted,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          date.day.toString(),
-                          style: AppTheme.serif(
-                            fontSize: 16,
-                            fontWeight: isSelected
-                                ? FontWeight.w800
-                                : FontWeight.w700,
-                            color: isSelected
-                                ? context.churchColors.onPrimary
-                                : (isToday
-                                      ? context.churchColors.primary
-                                      : context.churchColors.text),
-                          ),
-                        ),
-                        if (isToday && !isSelected) ...[
-                          const SizedBox(height: 3),
-                          Container(
-                            width: 4,
-                            height: 4,
-                            decoration: BoxDecoration(
-                              color: context.churchColors.primary,
-                              shape: BoxShape.circle,
-                            ),
-                          ),
-                        ],
-                      ],
-                    ),
-                  ),
+  Widget _buildNoticeRow(BuildContext context, ChurchEvent notice) {
+    final colors = context.churchColors;
+    return InkWell(
+      borderRadius: BorderRadius.circular(12),
+      onTap: () => context.push(AppRoutes.eventDetail(notice.id)),
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(minHeight: 56),
+        child: Row(
+          children: [
+            SizedBox(
+              width: 74,
+              child: Text(
+                DateFormat('EEE d MMM').format(notice.startsAt),
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                  color: colors.primary,
                 ),
               ),
             ),
-          );
-        }).toList(),
+            Expanded(
+              child: Text(
+                notice.title,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(fontSize: 16, color: colors.text),
+              ),
+            ),
+            Icon(Icons.chevron_right_rounded, color: colors.textMuted),
+          ],
+        ),
       ),
     );
   }
@@ -973,54 +959,39 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  /// Shortcuts to Sermons and Groups, and to the Church Workspace for church
+  /// leaders only. They wrap onto a second line on a narrow phone, so there
+  /// is no sideways scrolling and every label shows in full.
   Widget _buildQuickActionPills(BuildContext context) {
-    return SizedBox(
-      height: 38,
-      child: ListView(
-        scrollDirection: Axis.horizontal,
-        clipBehavior: Clip.none,
-        children: [
-          _buildActionPill(
-            context: context,
-            icon: Icons.auto_stories_rounded,
-            label: 'Bulletins',
-            color: context.churchColors.primary,
-            route: AppRoutes.bulletins,
-          ),
-          const SizedBox(width: 8),
-          _buildActionPill(
-            context: context,
-            icon: Icons.campaign_rounded,
-            label: 'Announcements',
-            color: context.churchColors.warning,
-            route: AppRoutes.announcements,
-          ),
-          const SizedBox(width: 8),
-          _buildActionPill(
-            context: context,
-            icon: Icons.smart_display_rounded,
-            label: 'Watch Sermons',
-            color: context.churchColors.secondary,
-            route: AppRoutes.sermons,
-          ),
-          const SizedBox(width: 8),
-          _buildActionPill(
-            context: context,
-            icon: Icons.groups_rounded,
-            label: 'Small Groups',
-            color: context.churchColors.success,
-            route: AppRoutes.groups,
-          ),
-          const SizedBox(width: 8),
+    final auth = context.watch<AuthBloc>().state;
+    final isLeader = auth is Authenticated && auth.user.role.isLeadership;
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: [
+        _buildActionPill(
+          context: context,
+          icon: Icons.smart_display_rounded,
+          label: TranslationString.watchSermons.tr(),
+          color: context.churchColors.secondary,
+          route: AppRoutes.sermons,
+        ),
+        _buildActionPill(
+          context: context,
+          icon: Icons.groups_rounded,
+          label: TranslationString.smallGroups.tr(),
+          color: context.churchColors.success,
+          route: AppRoutes.groups,
+        ),
+        if (isLeader)
           _buildActionPill(
             context: context,
             icon: Icons.admin_panel_settings_rounded,
-            label: 'Church Workspace',
+            label: TranslationString.churchWorkspace.tr(),
             color: context.churchColors.info,
             route: AppRoutes.admin,
           ),
-        ],
-      ),
+      ],
     );
   }
 
@@ -1038,7 +1009,8 @@ class _HomeScreenState extends State<HomeScreen> {
         borderRadius: BorderRadius.circular(999),
         onTap: () => context.push(route),
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+          constraints: const BoxConstraints(minHeight: 48),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(999),
             border: Border.all(color: color.withValues(alpha: 0.35)),
@@ -1046,14 +1018,16 @@ class _HomeScreenState extends State<HomeScreen> {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(icon, size: 16, color: color),
-              const SizedBox(width: 7),
-              Text(
-                label,
-                style: TextStyle(
-                  fontSize: 12.5,
-                  fontWeight: FontWeight.w600,
-                  color: context.churchColors.text,
+              Icon(icon, size: 20, color: color),
+              const SizedBox(width: 8),
+              Flexible(
+                child: Text(
+                  label,
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: context.churchColors.text,
+                  ),
                 ),
               ),
             ],

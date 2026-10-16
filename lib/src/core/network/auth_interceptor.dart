@@ -24,6 +24,8 @@ class AuthInterceptor extends QueuedInterceptor {
   final Dio _tokenDio;
   final _sessionExpired = StreamController<void>.broadcast();
 
+  static const _refreshTimeout = Duration(seconds: 60);
+
   /// Requests whose `401` means bad credentials, not an expired token.
   static const _noRenewalPaths = {
     ApiEndpoints.login,
@@ -135,9 +137,14 @@ class AuthInterceptor extends QueuedInterceptor {
 
   /// Trades [refreshToken] for a new token pair and stores it.
   Future<String> _refreshSession(String refreshToken) async {
+    // The backend revokes the old refresh token the moment it answers, so a
+    // reply that arrives after the app gave up would leave the app holding a
+    // revoked token. A server that has been idle can take up to a minute to
+    // wake, so this call waits longer than the usual 15 seconds.
     final response = await _tokenDio.post<Map<String, dynamic>>(
       ApiEndpoints.refreshToken,
       data: {'refresh_token': refreshToken},
+      options: Options(receiveTimeout: _refreshTimeout),
     );
     final data = response.data!;
     final accessToken = data['access_token'] as String;

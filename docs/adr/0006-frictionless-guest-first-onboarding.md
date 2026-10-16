@@ -1,6 +1,6 @@
 # Frictionless Guest-First Onboarding
 
-The app launches directly into public church content (Daily Quotes, Hymns, Public Events, Announcements) by acquiring an unauthenticated guest token behind the scenes, postponing mandatory login until personal or write actions occur.
+The app launches directly into public church content (Daily Quotes, Hymns, public Events) by acquiring an unauthenticated guest token behind the scenes, postponing mandatory login until personal or write actions occur.
 
 ## Considered Options
 

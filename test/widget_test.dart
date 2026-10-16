@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -8,16 +9,16 @@ import 'package:shalomly_app/src/core/config/app_config.dart';
 import 'package:shalomly_app/src/core/localization/bilingual_text.dart';
 import 'package:shalomly_app/src/core/theme/app_theme.dart';
 import 'package:shalomly_app/src/core/theme/church_colors.dart';
-import 'package:shalomly_app/src/features/announcements/domain/announcement.dart';
 import 'package:shalomly_app/src/features/auth/domain/user.dart';
 import 'package:shalomly_app/src/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:shalomly_app/src/features/auth/presentation/screens/login_screen.dart';
 import 'package:shalomly_app/src/features/auth/presentation/screens/register_screen.dart';
-import 'package:shalomly_app/src/features/bulletins/domain/bulletin.dart';
 import 'package:shalomly_app/src/features/devotional/domain/daily_quote.dart';
 import 'package:shalomly_app/src/features/devotional/presentation/bloc/devotional_bloc.dart';
 import 'package:shalomly_app/src/features/devotional/presentation/screens/home_screen.dart';
+import 'package:shalomly_app/src/features/events/data/events_repository.dart';
 import 'package:shalomly_app/src/features/events/domain/event.dart';
+import 'package:shalomly_app/src/features/events/domain/event_type.dart';
 import 'package:shalomly_app/src/features/giving/domain/fund.dart';
 import 'package:shalomly_app/src/features/groups/domain/group.dart';
 import 'package:shalomly_app/src/features/hymns/domain/hymn.dart';
@@ -26,7 +27,6 @@ import 'package:shalomly_app/src/features/prayer/presentation/bloc/prayer_bloc.d
 import 'package:shalomly_app/src/features/prayer/presentation/screens/prayer_screen.dart';
 import 'package:shalomly_app/src/features/sermons/domain/sermon.dart';
 import 'package:shalomly_app/src/features/sermons/presentation/bloc/sermons_bloc.dart';
-import 'package:shalomly_app/src/features/service_times/presentation/bloc/service_times_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
@@ -154,34 +154,6 @@ void main() {
       expect(fund.balance, equals(50000.0));
     });
 
-    test('Bulletin and Announcement models deserialize correctly', () {
-      final bulletin = Bulletin.fromJson({
-        'id': 10,
-        'tenant_id': 1,
-        'title': 'Sunday Order of Service',
-        'week_of': '2026-10-04',
-        'content_html': '<p>Opening Hymn</p>',
-        'pdf_url': 'https://storage.church.com/bulletin.pdf',
-        'is_published': true,
-      });
-
-      expect(bulletin.id, equals(10));
-      expect(bulletin.title, equals('Sunday Order of Service'));
-      expect(bulletin.isPublished, isTrue);
-      expect(bulletin.pdfUrl, isNotNull);
-
-      final announcement = Announcement.fromJson({
-        'id': 20,
-        'tenant_id': 1,
-        'title': 'Emergency Prayer Vigil',
-        'body': 'Urgent prayer meeting tonight at 7 PM.',
-        'is_urgent': true,
-      });
-
-      expect(announcement.isUrgent, isTrue);
-      expect(announcement.title, equals('Emergency Prayer Vigil'));
-    });
-
     test('Sermon model derives YouTube video URL and thumbnail', () {
       final sermon = Sermon.fromJson({
         'id': 5,
@@ -303,7 +275,7 @@ void main() {
       AuthBloc? authBloc,
       DevotionalBloc? devotionalBloc,
       SermonsBloc? sermonsBloc,
-      ServiceTimesBloc? serviceTimesBloc,
+      EventsRepository? eventsRepository,
     }) {
       final appConfig = AppConfig.resolve();
       return EasyLocalization(
@@ -312,8 +284,13 @@ void main() {
         path: 'assets/translations',
         fallbackLocale: const Locale('en', 'US'),
         startLocale: const Locale('en', 'US'),
-        child: RepositoryProvider<AppConfig>.value(
-          value: appConfig,
+        child: MultiRepositoryProvider(
+          providers: [
+            RepositoryProvider<AppConfig>.value(value: appConfig),
+            RepositoryProvider<EventsRepository>.value(
+              value: eventsRepository ?? TestEventsRepository(),
+            ),
+          ],
           child: MultiBlocProvider(
             providers: [
               BlocProvider<AuthBloc>.value(value: authBloc ?? TestAuthBloc()),
@@ -322,9 +299,6 @@ void main() {
               ),
               BlocProvider<SermonsBloc>.value(
                 value: sermonsBloc ?? TestSermonsBloc(),
-              ),
-              BlocProvider<ServiceTimesBloc>.value(
-                value: serviceTimesBloc ?? TestServiceTimesBloc(),
               ),
             ],
             child: Builder(
@@ -378,26 +352,26 @@ void main() {
       expect(find.text('SBC Church'), findsOneWidget);
       expect(find.text('Welcome to Fellowship'), findsOneWidget);
 
-      // 2. Worship spotlight, with no Service Times: no day or time is invented
+      // 2. Worship spotlight, with no worship Event: no day or time is
+      // invented, and the button leads to the calendar
       expect(find.text('WEEKLY WORSHIP'), findsOneWidget);
       expect(find.text('Worship With Us'), findsOneWidget);
-      expect(find.text('Order of Service'), findsOneWidget);
+      expect(find.text('View Events'), findsOneWidget);
+      expect(find.text('Order of Service'), findsNothing);
       expect(find.text('Watch Live'), findsNothing);
+      expect(find.text('Notices this week'), findsNothing);
 
-      // 3. Slim Action Pills (Replacing 8-box grid)
-      expect(find.text('Bulletins'), findsOneWidget);
-      expect(find.text('Announcements'), findsOneWidget);
+      // 3. Shortcuts: no Bulletins or Announcements any more, and the Church
+      // Workspace only for church leaders (this visitor is signed out)
+      expect(find.text('Bulletins'), findsNothing);
+      expect(find.text('Announcements'), findsNothing);
       expect(find.text('Watch Sermons'), findsOneWidget);
       expect(find.text('Small Groups'), findsOneWidget);
-      expect(
-        find.text('Church Workspace', skipOffstage: false),
-        findsOneWidget,
-      );
+      expect(find.text('Church Workspace'), findsNothing);
 
-      // 4. Weekday Calendar Strip
-      expect(find.text('SUN'), findsOneWidget);
-      expect(find.text('MON'), findsOneWidget);
-      expect(find.text('SAT'), findsOneWidget);
+      // 4. The day strip moved to the calendar on the Events tab
+      expect(find.text('SUN'), findsNothing);
+      expect(find.text('MON'), findsNothing);
 
       // 5. 3-Card Sanctuary Devotional Layout
       expect(find.text("TODAY'S SCRIPTURE"), findsOneWidget);
@@ -439,33 +413,12 @@ void main() {
 
       expect(find.text('Welcome to Fellowship'), findsOneWidget);
       expect(find.text('WEEKLY WORSHIP'), findsOneWidget);
-      expect(find.text('Bulletins'), findsOneWidget);
+      expect(find.text('Watch Sermons'), findsOneWidget);
       expect(find.text("TODAY'S SCRIPTURE"), findsOneWidget);
       expect(find.text('REFLECTION'), findsOneWidget);
       expect(find.text('PRAYER FOR TODAY'), findsOneWidget);
       expect(find.text('FELLOWSHIP HIGHLIGHTS'), findsOneWidget);
       expect(find.text('FEATURED SERMON'), findsOneWidget);
-    });
-
-    testWidgets('Tapping weekday date strip pill triggers selection', (
-      tester,
-    ) async {
-      tester.view.physicalSize = const Size(1200, 3000);
-      tester.view.devicePixelRatio = 2.0;
-      addTearDown(() {
-        tester.view.resetPhysicalSize();
-        tester.view.resetDevicePixelRatio();
-      });
-
-      await pumpHarness(
-        tester,
-        createHarness(churchTheme: defaultTheme, themeMode: ThemeMode.light),
-      );
-      await tester.pumpAndSettle();
-
-      expect(find.text('MON'), findsOneWidget);
-      await tester.tap(find.text('MON'));
-      await tester.pumpAndSettle();
     });
 
     testWidgets(
@@ -644,11 +597,19 @@ class TestSermonsBloc extends Bloc<SermonsEvent, SermonsState>
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
 
-class TestServiceTimesBloc extends Bloc<ServiceTimesEvent, ServiceTimesState>
-    implements ServiceTimesBloc {
-  TestServiceTimesBloc([super.initialState = const ServiceTimesState()]);
+/// An Events API that has no Events, so Home shows its plain worship card.
+class TestEventsRepository extends EventsRepository {
+  TestEventsRepository() : super(dio: Dio());
+
   @override
-  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+  Future<List<ChurchEvent>> getEvents({
+    DateTime? startsAfter,
+    DateTime? startsBefore,
+    bool includeCancelled = false,
+    List<EventType>? types,
+    int pageSize = 50,
+    bool newestFirst = false,
+  }) async => const [];
 }
 
 class TestPrayerBloc extends Bloc<PrayerEvent, PrayerState>

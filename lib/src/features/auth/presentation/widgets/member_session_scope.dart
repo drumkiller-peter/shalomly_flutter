@@ -25,6 +25,11 @@ class MemberSessionScope extends StatefulWidget {
       .dependOnInheritedWidgetOfExactType<_SessionGeneration>()!
       .generation;
 
+  /// Like [generationOf], for a screen that may be shown without a scope
+  /// above it (a test, say): it then never sees the session change.
+  static int maybeGenerationOf(BuildContext context) =>
+      context.dependOnInheritedWidgetOfExactType<_SessionGeneration>()?.generation ?? 0;
+
   @override
   State<MemberSessionScope> createState() => _MemberSessionScopeState();
 }

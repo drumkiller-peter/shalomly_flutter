@@ -11,29 +11,53 @@ class AuthRepository {
   /// refresh token; see `AuthInterceptor.sessionExpired`.
   final Stream<void> sessionExpired;
 
+  /// How long to wait between tries when the server isn't answering.
+  final Duration retryDelay;
+
   AuthRepository({
     required this.dio,
     required this.tokenStorage,
     required this.sessionExpired,
+    this.retryDelay = const Duration(seconds: 3),
   });
 
+  /// Tries at launch to find out who is signed in, and how long to wait for
+  /// each. A server that has been idle can take up to a minute to wake, which
+  /// is longer than the client's usual 15 seconds.
+  static const _checkAttempts = 3;
+  static const _wakeUpTimeout = Duration(seconds: 45);
+
+  /// The signed-in member, or null when nobody is, or the server refused the
+  /// session. A server that doesn't answer (asleep, offline, or failing) is
+  /// not a sign-out: it is waited for and tried again, and if it stays silent
+  /// the stored tokens are kept, so the next launch can still sign in.
   Future<User?> checkAuth() async {
     final token = await tokenStorage.getAccessToken();
     if (token == null || token.isEmpty) {
       return null;
     }
-    try {
-      final response = await dio.get<Map<String, dynamic>>(
-        ApiEndpoints.me,
-      );
-      if (response.statusCode == 200 && response.data != null) {
-        final user = User.fromJson(response.data!);
-        // Only the role: the call may have refreshed the tokens on the way.
-        await tokenStorage.saveUserRole(user.role.value);
-        return user;
+    for (var attempt = 1; attempt <= _checkAttempts; attempt++) {
+      try {
+        final response = await dio.get<Map<String, dynamic>>(
+          ApiEndpoints.me,
+          options: Options(receiveTimeout: _wakeUpTimeout),
+        );
+        if (response.statusCode == 200 && response.data != null) {
+          final user = User.fromJson(response.data!);
+          // Only the role: the call may have refreshed the tokens on the way.
+          await tokenStorage.saveUserRole(user.role.value);
+          return user;
+        }
+        return null;
+      } on DioException catch (e) {
+        final status = e.response?.statusCode;
+        final serverSilent = status == null || status >= 500;
+        if (!serverSilent) return null;
+        if (attempt < _checkAttempts) await Future<void>.delayed(retryDelay);
+      } catch (_) {
+        // A reply the app can't read: no point asking again.
+        return null;
       }
-    } catch (_) {
-      // Failed to validate token or offline
     }
     return null;
   }

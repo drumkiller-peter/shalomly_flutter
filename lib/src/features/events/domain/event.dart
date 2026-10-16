@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:shalomly_app/src/features/events/domain/event_type.dart';
 
 enum RSVPStatus {
   attending('attending', 'Attending'),
@@ -22,6 +23,7 @@ class ChurchEvent extends Equatable {
   final int id;
   final int tenantId;
   final String title;
+  final EventType type;
   final String? description;
   final DateTime startsAt;
   final DateTime? endsAt;
@@ -29,6 +31,9 @@ class ChurchEvent extends Equatable {
   final String? locationName;
   final String? address;
   final bool isCancelled;
+  final String? pdfUrl;
+  final String? imageUrl;
+  final int? createdById;
   final int attendingCount;
   final int maybeCount;
   final int declinedCount;
@@ -38,6 +43,7 @@ class ChurchEvent extends Equatable {
     required this.id,
     this.tenantId = 1,
     required this.title,
+    this.type = EventType.other,
     this.description,
     required this.startsAt,
     this.endsAt,
@@ -45,6 +51,9 @@ class ChurchEvent extends Equatable {
     this.locationName,
     this.address,
     this.isCancelled = false,
+    this.pdfUrl,
+    this.imageUrl,
+    this.createdById,
     this.attendingCount = 0,
     this.maybeCount = 0,
     this.declinedCount = 0,
@@ -60,7 +69,8 @@ class ChurchEvent extends Equatable {
     final startStr = (json['start_at'] ?? json['starts_at']) as String;
     final endStr = (json['end_at'] ?? json['ends_at']) as String?;
 
-    final attending = (json['attending_count'] ?? json['rsvp_count']) as int? ?? 0;
+    final attending =
+        (json['attending_count'] ?? json['rsvp_count']) as int? ?? 0;
     final maybe = json['maybe_count'] as int? ?? 0;
     final declined = json['declined_count'] as int? ?? 0;
 
@@ -70,13 +80,18 @@ class ChurchEvent extends Equatable {
       id: json['id'] as int,
       tenantId: json['tenant_id'] as int? ?? 1,
       title: json['title'] as String,
+      type: EventType.fromValue(json['type'] as String?),
       description: json['description'] as String?,
-      startsAt: DateTime.parse(startStr),
-      endsAt: endStr != null ? DateTime.parse(endStr) : null,
+      // The API sends UTC; members read the calendar in their own time zone.
+      startsAt: DateTime.parse(startStr).toLocal(),
+      endsAt: endStr != null ? DateTime.parse(endStr).toLocal() : null,
       isAllDay: json['is_all_day'] as bool? ?? false,
       locationName: (json['location_name'] ?? json['location']) as String?,
       address: json['address'] as String?,
       isCancelled: json['is_cancelled'] as bool? ?? false,
+      pdfUrl: json['pdf_url'] as String?,
+      imageUrl: json['image_url'] as String?,
+      createdById: json['created_by_id'] as int?,
       attendingCount: attending,
       maybeCount: maybe,
       declinedCount: declined,
@@ -89,13 +104,17 @@ class ChurchEvent extends Equatable {
       'id': id,
       'tenant_id': tenantId,
       'title': title,
+      'type': type.value,
       'description': description,
-      'start_at': startsAt.toIso8601String(),
-      'end_at': endsAt?.toIso8601String(),
+      'start_at': startsAt.toUtc().toIso8601String(),
+      'end_at': endsAt?.toUtc().toIso8601String(),
       'is_all_day': isAllDay,
       'location_name': locationName,
       'address': address,
       'is_cancelled': isCancelled,
+      'pdf_url': pdfUrl,
+      'image_url': imageUrl,
+      'created_by_id': createdById,
       'attending_count': attendingCount,
       'maybe_count': maybeCount,
       'declined_count': declinedCount,
@@ -108,6 +127,7 @@ class ChurchEvent extends Equatable {
     int? maybeCount,
     int? declinedCount,
     RSVPStatus? myRsvp,
+    bool clearRsvp = false,
     int? rsvpCount,
     String? userRsvp,
   }) {
@@ -115,6 +135,7 @@ class ChurchEvent extends Equatable {
       id: id,
       tenantId: tenantId,
       title: title,
+      type: type,
       description: description,
       startsAt: startsAt,
       endsAt: endsAt,
@@ -122,28 +143,40 @@ class ChurchEvent extends Equatable {
       locationName: locationName,
       address: address,
       isCancelled: isCancelled,
+      pdfUrl: pdfUrl,
+      imageUrl: imageUrl,
+      createdById: createdById,
       attendingCount: attendingCount ?? (rsvpCount ?? this.attendingCount),
       maybeCount: maybeCount ?? this.maybeCount,
       declinedCount: declinedCount ?? this.declinedCount,
-      myRsvp: myRsvp ?? (userRsvp != null ? RSVPStatus.fromString(userRsvp) : this.myRsvp),
+      myRsvp: clearRsvp
+          ? null
+          : (myRsvp ??
+                (userRsvp != null
+                    ? RSVPStatus.fromString(userRsvp)
+                    : this.myRsvp)),
     );
   }
 
   @override
   List<Object?> get props => [
-        id,
-        tenantId,
-        title,
-        description,
-        startsAt,
-        endsAt,
-        isAllDay,
-        locationName,
-        address,
-        isCancelled,
-        attendingCount,
-        maybeCount,
-        declinedCount,
-        myRsvp,
-      ];
+    id,
+    tenantId,
+    title,
+    type,
+    description,
+    startsAt,
+    endsAt,
+    isAllDay,
+    locationName,
+    address,
+    isCancelled,
+    pdfUrl,
+    imageUrl,
+    createdById,
+    attendingCount,
+    maybeCount,
+    declinedCount,
+    myRsvp,
+  ];
 }

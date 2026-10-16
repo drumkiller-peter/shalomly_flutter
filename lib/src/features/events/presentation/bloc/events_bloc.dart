@@ -2,6 +2,8 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shalomly_app/src/features/events/data/events_repository.dart';
 import 'package:shalomly_app/src/features/events/domain/event.dart';
+import 'package:shalomly_app/src/features/events/domain/event_draft.dart';
+import 'package:shalomly_app/src/features/groups/domain/group.dart';
 
 // Events
 abstract class EventsEvent extends Equatable {
@@ -13,31 +15,26 @@ abstract class EventsEvent extends Equatable {
 class EventsFetchRequested extends EventsEvent {
   final DateTime? startsAfter;
   final DateTime? startsBefore;
-  final int? groupId;
-  const EventsFetchRequested({this.startsAfter, this.startsBefore, this.groupId});
-  @override
-  List<Object?> get props => [startsAfter, startsBefore, groupId];
-}
-
-class EventCreateRequested extends EventsEvent {
-  final String title;
-  final String? description;
-  final DateTime startsAt;
-  final DateTime endsAt;
-  final String? locationName;
-  final String? address;
-  final int? groupId;
-  const EventCreateRequested({
-    required this.title,
-    this.description,
-    required this.startsAt,
-    required this.endsAt,
-    this.locationName,
-    this.address,
-    this.groupId,
+  final bool newestFirst;
+  const EventsFetchRequested({
+    this.startsAfter,
+    this.startsBefore,
+    this.newestFirst = false,
   });
   @override
-  List<Object?> get props => [title, description, startsAt, endsAt, locationName, address, groupId];
+  List<Object?> get props => [startsAfter, startsBefore, newestFirst];
+}
+
+/// Post the form's Event, and its weekly copies when it repeats.
+///
+/// [shareWith] are the Groups to share it with; a repeating Event is shared
+/// once, from its first week.
+class EventCreateRequested extends EventsEvent {
+  final EventDraft draft;
+  final List<Group> shareWith;
+  const EventCreateRequested(this.draft, {this.shareWith = const []});
+  @override
+  List<Object?> get props => [draft, shareWith];
 }
 
 class EventRsvpSubmitted extends EventsEvent {
@@ -78,9 +75,28 @@ class EventsLoading extends EventsState {
 class EventsLoaded extends EventsState {
   final List<ChurchEvent> events;
   final String? rsvpError;
-  const EventsLoaded(this.events, {this.rsvpError});
+
+  /// After posting: how many Events went through and how many did not.
+  final int? postedCount;
+  final int? postFailedCount;
+
+  /// Names of the Groups the Event could not be shared with.
+  final List<String> shareFailedGroups;
+  const EventsLoaded(
+    this.events, {
+    this.rsvpError,
+    this.postedCount,
+    this.postFailedCount,
+    this.shareFailedGroups = const [],
+  });
   @override
-  List<Object?> get props => [events, rsvpError];
+  List<Object?> get props => [
+    events,
+    rsvpError,
+    postedCount,
+    postFailedCount,
+    shareFailedGroups,
+  ];
 }
 
 class EventsError extends EventsState {
@@ -98,6 +114,9 @@ class EventsBloc extends Bloc<EventsEvent, EventsState> {
   /// newer one (say, the Events screen's filtered list).
   int _latestFetch = 0;
 
+  /// The list the member was last looking at, to show again after posting.
+  EventsFetchRequested _lastRequest = const EventsFetchRequested();
+
   EventsBloc({required this.repository}) : super(const EventsInitial()) {
     on<EventsFetchRequested>(_onFetchRequested);
     on<EventCreateRequested>(_onCreateRequested);
@@ -110,12 +129,13 @@ class EventsBloc extends Bloc<EventsEvent, EventsState> {
     Emitter<EventsState> emit,
   ) async {
     final fetch = ++_latestFetch;
+    _lastRequest = event;
     emit(const EventsLoading());
     try {
       final events = await repository.getEvents(
         startsAfter: event.startsAfter,
         startsBefore: event.startsBefore,
-        groupId: event.groupId,
+        newestFirst: event.newestFirst,
       );
       if (fetch == _latestFetch) emit(EventsLoaded(events));
     } catch (e) {
@@ -127,19 +147,47 @@ class EventsBloc extends Bloc<EventsEvent, EventsState> {
     EventCreateRequested event,
     Emitter<EventsState> emit,
   ) async {
+    var posted = 0;
+    var failed = 0;
+    // A repeating Event is shared once: its earliest week that was posted.
+    ChurchEvent? first;
+    for (final draft in event.draft.weeklyCopies()) {
+      try {
+        final created = await repository.createEvent(draft);
+        first ??= created;
+        posted++;
+      } catch (_) {
+        failed++;
+      }
+    }
+    final shareFailed = <String>[];
+    for (final group in event.shareWith) {
+      try {
+        if (first == null) throw StateError('The Event was not posted');
+        await repository.shareWithGroup(eventId: first.id, groupId: group.id);
+      } catch (_) {
+        shareFailed.add(group.name);
+      }
+    }
+    final fetch = ++_latestFetch;
     try {
-      await repository.createEvent(
-        title: event.title,
-        description: event.description,
-        startsAt: event.startsAt,
-        endsAt: event.endsAt,
-        locationName: event.locationName,
-        address: event.address,
-        groupId: event.groupId,
+      final events = await repository.getEvents(
+        startsAfter: _lastRequest.startsAfter,
+        startsBefore: _lastRequest.startsBefore,
+        newestFirst: _lastRequest.newestFirst,
       );
-      add(const EventsFetchRequested());
+      if (fetch == _latestFetch) {
+        emit(
+          EventsLoaded(
+            events,
+            postedCount: posted,
+            postFailedCount: failed,
+            shareFailedGroups: shareFailed,
+          ),
+        );
+      }
     } catch (e) {
-      emit(EventsError(e.toString()));
+      if (fetch == _latestFetch) emit(EventsError(e.toString()));
     }
   }
 
@@ -186,10 +234,12 @@ class EventsBloc extends Bloc<EventsEvent, EventsState> {
         );
       } catch (e) {
         // Revert to original events and alert user of failure
-        emit(EventsLoaded(
-          currentEvents,
-          rsvpError: 'Unable to record RSVP response. Please try again.',
-        ));
+        emit(
+          EventsLoaded(
+            currentEvents,
+            rsvpError: 'Unable to record RSVP response. Please try again.',
+          ),
+        );
       }
     }
   }
@@ -211,7 +261,7 @@ class EventsBloc extends Bloc<EventsEvent, EventsState> {
           if (e.myRsvp == RSVPStatus.declined) declined--;
 
           return e.copyWith(
-            myRsvp: null,
+            clearRsvp: true,
             attendingCount: attending < 0 ? 0 : attending,
             maybeCount: maybe < 0 ? 0 : maybe,
             declinedCount: declined < 0 ? 0 : declined,
@@ -225,10 +275,12 @@ class EventsBloc extends Bloc<EventsEvent, EventsState> {
         await repository.withdrawRsvp(event.eventId);
       } catch (e) {
         // Revert to original events and alert user of failure
-        emit(EventsLoaded(
-          currentEvents,
-          rsvpError: 'Unable to withdraw RSVP. Please try again.',
-        ));
+        emit(
+          EventsLoaded(
+            currentEvents,
+            rsvpError: 'Unable to withdraw RSVP. Please try again.',
+          ),
+        );
       }
     }
   }
